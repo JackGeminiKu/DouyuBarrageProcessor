@@ -66,10 +66,10 @@ namespace Douyu.Client
                     if (giftInfo == null) {
                         // set processed = 2, 表示没有找到该礼物的相关信息
                         if (ExecuteNonQuery("update gift_message set processed = 2 where id = {0}", reader["id"]) != 1)
-                            LogService.GetLogger("Error").ErrorFormatted(
+                            LogService.GetLogger("Error").ErrorFormat(
                                 "将礼物消息中的processed设置为2失败, 礼物id为{0}", giftId
                             );
-                        LogService.GetLogger("Error").ErrorFormatted("系统中没有id为{0}的礼物", giftId);
+                        LogService.GetLogger("Error").ErrorFormat("系统中没有id为{0}的礼物", giftId);
                         continue;
                     }
 
@@ -186,7 +186,7 @@ namespace Douyu.Client
                 movieScore, movieName, roomId
             );
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormatted("更新电影积分失败: {0}", command);
+                LogService.GetLogger("Error").ErrorFormat("更新电影积分失败: {0}", command);
         }
 
         public static void GetTopMovies(int roomId, List<string> movieNames, List<int> movieScores)
@@ -255,21 +255,21 @@ namespace Douyu.Client
         {
             string command = string.Format("update chat_message set processed = 1 where id = {0}", message.Id);
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormatted("弹幕标记为已处理失败: {0}", command);
+                LogService.GetLogger("Error").ErrorFormat("弹幕标记为已处理失败: {0}", command);
         }
 
         public static void SetGiftMessageProcessed(GiftMessage message)
         {
             string command = string.Format("update gift_message set processed = 1 where id = {0}", message.Id);
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormatted("礼物标记为已处理失败: {0}", command);
+                LogService.GetLogger("Error").ErrorFormat("礼物标记为已处理失败: {0}", command);
         }
 
         public static void SetChouqinMessageProcessed(ChouqinMessage message)
         {
             string command = string.Format("update chouqin_message set processed = 1 where id = {0}", message.Id);
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormatted("酬勤标记为已处理失败: {0}", command);
+                LogService.GetLogger("Error").ErrorFormat("酬勤标记为已处理失败: {0}", command);
         }
 
         #region "SQL functions"

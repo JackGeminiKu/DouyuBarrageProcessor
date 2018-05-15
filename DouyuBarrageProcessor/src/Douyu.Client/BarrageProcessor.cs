@@ -174,7 +174,7 @@ namespace Douyu.Client
             // 送礼物, 赚积分
             var score = ScoreCalculator.CalGiftScore(giftMessage);
             if (score < 0) {
-                LogService.GetLogger("Error").ErrorFormatted("获取礼物积分失败, 礼物ID为{0}", giftMessage.GiftId);
+                LogService.GetLogger("Error").ErrorFormat("获取礼物积分失败, 礼物ID为{0}", giftMessage.GiftId);
                 return;
             }
             DbService.AddUserScore(giftMessage.RoomId, giftMessage.UserId, giftMessage.UserName, score);

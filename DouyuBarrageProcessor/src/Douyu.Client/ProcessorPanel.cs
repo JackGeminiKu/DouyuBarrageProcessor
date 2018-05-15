@@ -59,7 +59,7 @@ namespace Douyu.Client
 
         private void bwDouyu_DoWork(object sender, DoWorkEventArgs e)
         {
-            _barrageProcessor.ChangeRoomId(int.Parse(cboRoom.GetTextSafe()));
+            _barrageProcessor.ChangeRoomId(int.Parse(cboRoom.GetTextCrossThread()));
             _barrageProcessor.StartProcess();
         }
 
@@ -123,7 +123,7 @@ namespace Douyu.Client
                 AppendText(txtGift, "[{0}]: + {1}", e.User, e.Score);
             } else {
                 AppendText(txtGift, "[{0:HH:mm:ss}] [{1}] [积分] [{2}]: + {3}",
-                    DateTime.Now, cboRoom.GetTextSafe(), e.User, e.Score);
+                    DateTime.Now, cboRoom.GetTextCrossThread(), e.User, e.Score);
             }
         }
 
@@ -132,9 +132,9 @@ namespace Douyu.Client
         void AppendText(TextBox textBox, string format, params object[] args)
         {
             if (textBox.GetLineCount() > 1000) {
-                textBox.ClearSafe();
+                textBox.ClearCrossThread();
             }
-            textBox.AppendLineSafe(format, args);
+            textBox.AppendLineCrossThread(format, args);
         }
 
         private void btnSaveRoom_Click(object sender, EventArgs e)
