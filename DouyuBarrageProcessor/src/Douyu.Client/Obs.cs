@@ -24,13 +24,13 @@ namespace Douyu.Client
             TopUsers.Update();
 
             CommandMessage = new CommandMessage();
-            ThanksGiftMessage = new ThanksGiftMessage();
+            GiftMessage = new ThanksGiftMessage();
         }
 
         public static TopMovies TopMovies { get; private set; }
         public static TopUsers TopUsers { get; private set; }
         public static CommandMessage CommandMessage { get; private set; }
-        public static ThanksGiftMessage ThanksGiftMessage { get; private set; }
+        public static ThanksGiftMessage GiftMessage { get; private set; }
 
         public static string ObsDir
         {
@@ -161,7 +161,7 @@ namespace Douyu.Client
 
         public void AddErrorMessage(string message)
         {
-            LogService.GetLogger("Error").Error(message);
+            LogService.Error(message);
             _errorFile.AppendText(message);
         }
 

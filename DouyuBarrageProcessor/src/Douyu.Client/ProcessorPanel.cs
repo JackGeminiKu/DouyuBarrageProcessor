@@ -22,7 +22,7 @@ namespace Douyu.Client
             _barrageProcessor.ChatMessageProcessed += barrageProcessor_ChatMessageProcessed;
             _barrageProcessor.GiftMessageProcessed += barrageProcessor_GiftMessageProcessed;
             _barrageProcessor.ChouqinMessageProcessed += barrageProcessor_ChouqinMessageProcessed;
-            _barrageProcessor.ScoreAdded += barrageProcessor_ScoreAdded;
+            _barrageProcessor.UserScoreAdded += barrageProcessor_ScoreAdded;
         }
 
         protected override void OnHandleDestroyed(EventArgs e)
@@ -30,7 +30,7 @@ namespace Douyu.Client
             _barrageProcessor.ChatMessageProcessed -= barrageProcessor_ChatMessageProcessed;
             _barrageProcessor.GiftMessageProcessed -= barrageProcessor_GiftMessageProcessed;
             _barrageProcessor.ChouqinMessageProcessed -= barrageProcessor_ChouqinMessageProcessed;
-            _barrageProcessor.ScoreAdded -= barrageProcessor_ScoreAdded;
+            _barrageProcessor.UserScoreAdded -= barrageProcessor_ScoreAdded;
             _barrageProcessor.StopProcess();
             base.OnHandleDestroyed(e);
         }

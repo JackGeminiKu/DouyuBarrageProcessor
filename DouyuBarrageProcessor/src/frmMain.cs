@@ -47,13 +47,13 @@ namespace Douyu.Client
 
         void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
         {
-            LogService.GetLogger("Error").Error(e.Exception.Message, e.Exception);
+            LogService.Error(e.Exception.Message, e.Exception);
         }
 
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = e.ExceptionObject as Exception;
-            LogService.GetLogger("Error").Error(ex.Message, ex);
+            LogService.Error(ex.Message, ex);
         }
 
         private void FrmMain_Shown(object sender, EventArgs e)

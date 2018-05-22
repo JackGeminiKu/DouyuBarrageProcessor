@@ -48,7 +48,7 @@ namespace Douyu.Client
                     break;
                 default:
                     score = 130000;
-                    LogService.GetLogger("Error").Error("");
+                    LogService.Error("");
                     break;
             }
             return score;

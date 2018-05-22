@@ -66,10 +66,10 @@ namespace Douyu.Client
                     if (giftInfo == null) {
                         // set processed = 2, 表示没有找到该礼物的相关信息
                         if (ExecuteNonQuery("update gift_message set processed = 2 where id = {0}", reader["id"]) != 1)
-                            LogService.GetLogger("Error").ErrorFormat(
+                            LogService.ErrorFormat(
                                 "将礼物消息中的processed设置为2失败, 礼物id为{0}", giftId
                             );
-                        LogService.GetLogger("Error").ErrorFormat("系统中没有id为{0}的礼物", giftId);
+                        LogService.ErrorFormat("系统中没有id为{0}的礼物", giftId);
                         continue;
                     }
 
@@ -140,7 +140,7 @@ namespace Douyu.Client
                     roomId, userId, userName, userScore);
             }
             if (ExecuteNonQuery(command) != 1) {
-                LogService.GetLogger("Error").Error("保存弹幕积分失败: " + command);
+                LogService.Error("保存弹幕积分失败: " + command);
                 return;
             }
         }
@@ -186,7 +186,7 @@ namespace Douyu.Client
                 movieScore, movieName, roomId
             );
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormat("更新电影积分失败: {0}", command);
+                LogService.ErrorFormat("更新电影积分失败: {0}", command);
         }
 
         public static void GetTopMovies(int roomId, List<string> movieNames, List<int> movieScores)
@@ -255,21 +255,21 @@ namespace Douyu.Client
         {
             string command = string.Format("update chat_message set processed = 1 where id = {0}", message.Id);
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormat("弹幕标记为已处理失败: {0}", command);
+                LogService.ErrorFormat("弹幕标记为已处理失败: {0}", command);
         }
 
         public static void SetGiftMessageProcessed(GiftMessage message)
         {
             string command = string.Format("update gift_message set processed = 1 where id = {0}", message.Id);
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormat("礼物标记为已处理失败: {0}", command);
+                LogService.ErrorFormat("礼物标记为已处理失败: {0}", command);
         }
 
         public static void SetChouqinMessageProcessed(ChouqinMessage message)
         {
             string command = string.Format("update chouqin_message set processed = 1 where id = {0}", message.Id);
             if (ExecuteNonQuery(command) != 1)
-                LogService.GetLogger("Error").ErrorFormat("酬勤标记为已处理失败: {0}", command);
+                LogService.ErrorFormat("酬勤标记为已处理失败: {0}", command);
         }
 
         #region "SQL functions"
@@ -286,10 +286,10 @@ namespace Douyu.Client
         static int ExecuteNonQuery(string sql)
         {
             try {
-                LogService.GetLogger("Sql").Debug("[SQL] " + sql);
+                LogService.Debug("[SQL] " + sql);
                 return CreateCommand(sql).ExecuteNonQuery();
             } catch (Exception) {
-                LogService.GetLogger("Sql").Debug("[SQL-2] " + sql);
+                LogService.Debug("[SQL-2] " + sql);
                 return CreateCommand(sql).ExecuteNonQuery();
             }
         }
@@ -302,10 +302,10 @@ namespace Douyu.Client
         static T ExecuteScalar<T>(string sql)
         {
             try {
-                LogService.GetLogger("Sql").Debug("[SQL] " + sql);
+                LogService.Debug("[SQL] " + sql);
                 return (T)CreateCommand(sql).ExecuteScalar();
             } catch (Exception) {
-                LogService.GetLogger("Sql").Debug("[SQL-2] " + sql);
+                LogService.Debug("[SQL-2] " + sql);
                 return (T)CreateCommand(sql).ExecuteScalar();
             }
         }
@@ -318,10 +318,10 @@ namespace Douyu.Client
         static IDataReader ExecuteReader(string sql)
         {
             try {
-                LogService.GetLogger("Sql").Debug("[SQL] " + sql);
+                LogService.Debug("[SQL] " + sql);
                 return CreateCommand(sql).ExecuteReader();
             } catch (Exception) {
-                LogService.GetLogger("Sql").Debug("[SQL-2] " + sql);
+                LogService.Debug("[SQL-2] " + sql);
                 return CreateCommand(sql).ExecuteReader();
             }
         }
