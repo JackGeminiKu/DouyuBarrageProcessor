@@ -65,7 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\Douyu.Client\Snapfile.cs" />
+    <Compile Include="src\Douyu.Client\SelfDeletingFile.cs" />
     <Compile Include="src\Douyu.Client\Timerfile.cs" />
     <Compile Include="src\Douyu.Messages\ServerMessage.cs" />
     <Compile Include="src\Douyu.Client\ProcessorPanel.cs">

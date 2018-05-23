@@ -53,23 +53,21 @@ namespace Douyu.Client
 
         public void Update()
         {
-            lock (obj) {
-                List<string> names = new List<string>();
-                List<int> scores = new List<int>();
-                DbService.GetTopMovies(RoomId, names, scores);
-                string topMovies = "";
-                for (int i = 0; i < names.Count; i++) {
-                    topMovies += (topMovies == "" ? "" : "\n")
-                        + string.Format("[{0:D2}] #{1}-{2}", i + 1, names[i], scores[i]);
-                }
-                if (_topMovies != topMovies) {
-                    File.WriteAllText(TopMoviesFile, topMovies);
-                    _topMovies = topMovies;
-                }
+            var names = new List<string>();
+            var scores = new List<int>();
+            DbService.GetTopMovies(RoomId, names, scores);
+            var topMovies = "";
+            for (var i = 0; i < names.Count; i++) {
+                topMovies += (topMovies == "" ? "" : "\n")
+                    + string.Format("[{0:D2}] #{1}-{2}", i + 1, names[i], scores[i]);
+            }
+
+            if (_topMovies != topMovies) {
+                File.WriteAllText(TopMoviesFile, topMovies);
+                _topMovies = topMovies;
             }
         }
 
-        private static readonly object obj = new object();
         private static string _topMovies = "";
     }
 
@@ -88,24 +86,21 @@ namespace Douyu.Client
 
         public void Update()
         {
-            lock (obj) {
-                List<string> names;
-                List<int> scores;
-                string topUsers = "";
-                DbService.GetTopUsers(RoomId, out names, out scores);
-                for (int i = 0; i < names.Count; i++) {
-                    topUsers += (topUsers == "" ? "" : "\n")
-                        + string.Format("[{0:D2}] {1} {2}", i + 1, names[i], scores[i]);
-                }
+            var names = new List<string>();
+            var scores = new List<int>();
+            var topUsers = "";
+            DbService.GetTopUsers(RoomId, out names, out scores);
+            for (var i = 0; i < names.Count; i++) {
+                topUsers += (topUsers == "" ? "" : "\n")
+                    + string.Format("[{0:D2}] {1} {2}", i + 1, names[i], scores[i]);
+            }
 
-                if (_topUsers != topUsers) {
-                    File.WriteAllText(TopUsersFile, topUsers);
-                    _topUsers = topUsers;
-                }
+            if (_topUsers != topUsers) {
+                File.WriteAllText(TopUsersFile, topUsers);
+                _topUsers = topUsers;
             }
         }
 
-        private static readonly object obj = new object();
         private string _topUsers = "";
     }
 
@@ -115,16 +110,16 @@ namespace Douyu.Client
     {
         readonly string MessageFile = Obs.ObsDir + "thanks_gift_message.txt";
 
-        Snapfile _snapfile;
+        SelfDeletingFile _snapfile;
 
         public ThanksGiftMessage()
         {
-            _snapfile = new Snapfile(MessageFile, 5, 10);
+            _snapfile = new SelfDeletingFile(MessageFile, 5, 10);
         }
 
         public void AddMessage(string message)
         {
-            _snapfile.AppendText(message);
+            _snapfile.AppendMessage(message);
         }
 
         public void AddMessage(string format, params object[] args)
@@ -141,12 +136,12 @@ namespace Douyu.Client
         readonly string MessageFile = Obs.ObsDir + "command_message.txt";
 
         Timerfile _messageFile;
-        Snapfile _errorFile;
+        SelfDeletingFile _errorFile;
 
         public CommandMessage()
         {
             _messageFile = new Timerfile(MessageFile, 10);
-            _errorFile = new Snapfile(ErrorFile, 5, 10);
+            _errorFile = new SelfDeletingFile(ErrorFile, 5, 10);
         }
 
         public void AddMessage(string message)
@@ -162,7 +157,7 @@ namespace Douyu.Client
         public void AddErrorMessage(string message)
         {
             LogService.Error(message);
-            _errorFile.AppendText(message);
+            _errorFile.AppendMessage(message);
         }
 
         public void AddErrorMessage(string format, params object[] args)
