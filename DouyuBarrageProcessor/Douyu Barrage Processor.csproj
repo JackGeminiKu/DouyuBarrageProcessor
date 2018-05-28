@@ -74,7 +74,7 @@
     <Compile Include="src\Douyu.Client\ProcessorPanel.Designer.cs">
       <DependentUpon>ProcessorPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="src\Douyu.Client\ScoreCalculator.cs" />
+    <Compile Include="src\Douyu.Client\ScoreManager.cs" />
     <Compile Include="src\Douyu.Client\DbService.cs" />
     <Compile Include="src\Douyu.Client\Obs.cs" />
     <Compile Include="src\Douyu.Events\ScoreAddedEventArgs.cs" />
@@ -88,9 +88,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\Douyu.Client\BarrageProcessor.cs" />
     <Compile Include="src\Douyu\DouyuException.cs" />
-    <Compile Include="src\Douyu.Events\ChatMessageEventArgs.cs" />
-    <Compile Include="src\Douyu.Events\ChouqinMessageEventArgs.cs" />
-    <Compile Include="src\Douyu.Events\GiftMesssageEventArgs.cs" />
+    <Compile Include="src\Douyu.Events\ServerMessageEventArgs.cs" />
     <Compile Include="src\Douyu.Messages\Message.cs" />
     <Compile Include="src\Douyu.Messages\ChatMessage.cs" />
     <Compile Include="src\Douyu.Messages\ChouqinMessage.cs" />

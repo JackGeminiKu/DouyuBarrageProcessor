@@ -7,7 +7,7 @@ namespace Douyu.Events
 {
     public class ScoreAddedEventArgs : EventArgs
     {
-        public ScoreAddedEventArgs(string user, double score, string gift)
+        public ScoreAddedEventArgs(string user, string gift, double score)
         {
             User = user;
             Score = score;

@@ -8,7 +8,7 @@ using Jack4net.Log;
 
 namespace Douyu.Client
 {
-    public static class ScoreCalculator
+    public static class ScoreManager
     {
         public static double CalGiftScore(GiftMessage giftMessage)
         {

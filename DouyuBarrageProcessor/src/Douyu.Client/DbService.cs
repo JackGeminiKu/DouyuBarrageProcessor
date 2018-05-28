@@ -147,6 +147,7 @@ namespace Douyu.Client
 
         public static int QueryUserScore(int roomId, int userId)
         {
+            // 如果没查到这个人呢? 积分为0?
             int score = ExecuteScalar<int>(
                 "select user_score from user_score where room_id = {0} and user_id = {1}",
                 roomId, userId
@@ -179,7 +180,7 @@ namespace Douyu.Client
 
         #region "电影相关"
 
-        public static void AddMovieScore(int roomId, int userId, string movieName, int movieScore)
+        public static void AddMovieScore(int roomId, string movieName, int movieScore)
         {
             string command = string.Format(
                 "update movie_score set movie_score = movie_score + {0} where movie_name = '{1}' and room_id = {2}",
@@ -237,7 +238,7 @@ namespace Douyu.Client
             return config.First().value;
         }
 
-        public static string GetMovieName(int roomId, string aliasName)
+        public static string GetOfficialMovieName(int roomId, string aliasName)
         {
             var movieAlias = _conn.Query("select * from movie_alias where room_id = @RoomId and movie_alias = @AliasName",
                 new { RoomId = roomId, AliasName = aliasName });

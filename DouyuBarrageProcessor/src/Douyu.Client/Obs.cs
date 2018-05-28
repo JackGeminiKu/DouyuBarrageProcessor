@@ -14,7 +14,7 @@ namespace Douyu.Client
     {
         public static void Initialize(int roomId)
         {
-            if (Directory.Exists(ObsDir) == false)
+            if (!Directory.Exists(ObsDir))
                 Directory.CreateDirectory(Obs.ObsDir);
 
             TopMovies = new TopMovies(roomId);

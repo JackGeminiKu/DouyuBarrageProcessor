@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Douyu.Events;
+using Douyu.Messages;
 
 namespace Douyu.Client
 {
@@ -87,33 +88,33 @@ namespace Douyu.Client
 
         #region 弹幕消息
 
-        void barrageProcessor_ChatMessageProcessed(object sender, ChatMessageEventArgs e)
+        void barrageProcessor_ChatMessageProcessed(object sender, ServerMessageEventArgs<ChatMessage> e)
         {
             if (chkSimpleMode.Checked) {
-                AppendText(txtBarrage, "[{0}]: {1}", e.ChatMessage.UserName, e.ChatMessage.Text);
+                AppendText(txtBarrage, "[{0}]: {1}", e.Message.UserName, e.Message.Text);
             } else {
                 AppendText(txtBarrage, "[{0:HH:mm:ss}] [{1}] [弹幕] [{2}]: {3}",
-                    e.ChatMessage.Time, e.ChatMessage.RoomId, e.ChatMessage.UserName, e.ChatMessage.Text);
+                    e.Message.Time, e.Message.RoomId, e.Message.UserName, e.Message.Text);
             }
         }
 
-        void barrageProcessor_GiftMessageProcessed(object sender, GiftMessageEventArgs e)
+        void barrageProcessor_GiftMessageProcessed(object sender, ServerMessageEventArgs<GiftMessage> e)
         {
             if (chkSimpleMode.Checked) {
-                AppendText(txtGift, "[{0}]: {1}", e.GiftMessage.UserName, e.GiftMessage.GiftName);
+                AppendText(txtGift, "[{0}]: {1}", e.Message.UserName, e.Message.GiftName);
             } else {
                 AppendText(txtGift, "[{0:HH:mm:ss}] [{1}] [礼物] [{2}]: {3}",
-                    e.GiftMessage.Time, e.GiftMessage.RoomId, e.GiftMessage.UserName, e.GiftMessage.GiftName);
+                    e.Message.Time, e.Message.RoomId, e.Message.UserName, e.Message.GiftName);
             }
         }
 
-        void barrageProcessor_ChouqinMessageProcessed(object sender, ChouqinMessageEventArgs e)
+        void barrageProcessor_ChouqinMessageProcessed(object sender, ServerMessageEventArgs<ChouqinMessage> e)
         {
             if (chkSimpleMode.Checked) {
-                AppendText(txtGift, "等级{0}酬勤", e.ChouqinMessage.Level);
+                AppendText(txtGift, "等级{0}酬勤", e.Message.Level);
             } else {
                 AppendText(txtGift, "[{0:HH:mm:ss}] [{1}] [酬勤]: 等级{2}",
-                    e.ChouqinMessage.Time, e.ChouqinMessage.RoomId, e.ChouqinMessage.Level);
+                    e.Message.Time, e.Message.RoomId, e.Message.Level);
             }
         }
 
