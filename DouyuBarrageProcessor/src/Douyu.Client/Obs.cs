@@ -23,14 +23,17 @@ namespace Douyu.Client
             TopUsers = new TopUsers(roomId);
             TopUsers.Update();
 
-            CommandMessage = new CommandMessage();
-            GiftMessage = new ThanksGiftMessage();
+            MovieMessage = new MovieMessage();
+            ThanksMessage = new ThanksMessage();
+            OtherMessage = new OtherMessage();
         }
 
         public static TopMovies TopMovies { get; private set; }
         public static TopUsers TopUsers { get; private set; }
-        public static CommandMessage CommandMessage { get; private set; }
-        public static ThanksGiftMessage GiftMessage { get; private set; }
+
+        public static MovieMessage MovieMessage { get; private set; }
+        public static ThanksMessage ThanksMessage { get; private set; }
+        public static OtherMessage OtherMessage { get; private set; }
 
         public static string ObsDir
         {
@@ -106,13 +109,49 @@ namespace Douyu.Client
 
 
 
-    public class ThanksGiftMessage
+    public class MovieMessage
+    {
+        readonly string UserName = Obs.ObsDir + "PlayMovie_UserName.txt";
+        readonly string MovieName = Obs.ObsDir + "PlayMovie_MovieName.txt";
+        readonly string MovieFail = Obs.ObsDir + "PlayMovie_PlayFail.txt";
+
+        Timerfile _userName;
+        Timerfile _movieName;
+        Timerfile _playFail;
+
+        public MovieMessage()
+        {
+            _userName = new Timerfile(MovieName, 10);
+            _movieName = new Timerfile(UserName, 10);
+            _playFail = new Timerfile(MovieFail, 10);
+        }
+
+        public void PlayMovie(string userName, string movieName, int rank)
+        {
+            _userName.WriteText(userName);
+            _movieName.WriteText("成功投票 " + movieName);
+        }
+
+        public void PlayFail(string message)
+        {
+            _playFail.WriteText(message);
+        }
+
+        public void PlayFail(string format, params object[] args)
+        {
+            PlayFail(string.Format(format, args));
+        }
+    }
+
+
+
+    public class ThanksMessage
     {
         readonly string MessageFile = Obs.ObsDir + "thanks_gift_message.txt";
 
         SelfDeletingFile _snapfile;
 
-        public ThanksGiftMessage()
+        public ThanksMessage()
         {
             _snapfile = new SelfDeletingFile(MessageFile, 5, 10);
         }
@@ -130,7 +169,7 @@ namespace Douyu.Client
 
 
 
-    public class CommandMessage
+    public class OtherMessage
     {
         readonly string ErrorFile = Obs.ObsDir + "command_message_error.txt";
         readonly string MessageFile = Obs.ObsDir + "command_message.txt";
@@ -138,7 +177,7 @@ namespace Douyu.Client
         Timerfile _messageFile;
         SelfDeletingFile _errorFile;
 
-        public CommandMessage()
+        public OtherMessage()
         {
             _messageFile = new Timerfile(MessageFile, 10);
             _errorFile = new SelfDeletingFile(ErrorFile, 5, 10);
@@ -152,17 +191,6 @@ namespace Douyu.Client
         public void AddMessage(string format, params object[] args)
         {
             AddMessage(string.Format(format, args));
-        }
-
-        public void AddErrorMessage(string message)
-        {
-            LogService.Error(message);
-            _errorFile.AppendMessage(message);
-        }
-
-        public void AddErrorMessage(string format, params object[] args)
-        {
-            AddErrorMessage(string.Format(format, args));
         }
     }
 }
