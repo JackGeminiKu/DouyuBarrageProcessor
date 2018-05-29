@@ -147,13 +147,13 @@ namespace Douyu.Client
 
     public class ThanksMessage
     {
-        readonly string MessageFile = Obs.ObsDir + "thanks_gift_message.txt";
+        readonly string MessageFile = Obs.ObsDir + "ThanksMessage.txt";
 
         SelfDeletingFile _snapfile;
 
         public ThanksMessage()
         {
-            _snapfile = new SelfDeletingFile(MessageFile, 5, 10);
+            _snapfile = new SelfDeletingFile(MessageFile, 3, 10);
         }
 
         public void AddMessage(string message)
@@ -171,21 +171,18 @@ namespace Douyu.Client
 
     public class OtherMessage
     {
-        readonly string ErrorFile = Obs.ObsDir + "command_message_error.txt";
-        readonly string MessageFile = Obs.ObsDir + "command_message.txt";
+        readonly string MessageFile = Obs.ObsDir + "OtherMessage.txt";
 
-        Timerfile _messageFile;
-        SelfDeletingFile _errorFile;
+        SelfDeletingFile _messageFile;
 
         public OtherMessage()
         {
-            _messageFile = new Timerfile(MessageFile, 10);
-            _errorFile = new SelfDeletingFile(ErrorFile, 5, 10);
+            _messageFile = new SelfDeletingFile(MessageFile, 3, 10);
         }
 
         public void AddMessage(string message)
         {
-            _messageFile.WriteText(message);
+            _messageFile.AppendMessage(message);
         }
 
         public void AddMessage(string format, params object[] args)
