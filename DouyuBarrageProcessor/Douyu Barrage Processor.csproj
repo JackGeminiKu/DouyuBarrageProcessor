@@ -66,7 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Douyu.Client\SelfDeletingFile.cs" />
-    <Compile Include="src\Douyu.Client\Timerfile.cs" />
+    <Compile Include="src\Douyu.Client\TimerFile.cs" />
     <Compile Include="src\Douyu.Messages\ServerMessage.cs" />
     <Compile Include="src\Douyu.Client\ProcessorPanel.cs">
       <SubType>UserControl</SubType>

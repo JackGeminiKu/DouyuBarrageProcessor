@@ -8,12 +8,12 @@ using System.Threading;
 
 namespace Douyu.Client
 {
-    public class Timerfile
+    public class TimerFile
     {
         System.Timers.Timer _tmrDeleter;
         Mutex _mutex;
 
-        public Timerfile(string path, int maxTime)
+        public TimerFile(string path, int maxTime)
         {
             Path = path;
             _tmrDeleter = new System.Timers.Timer();
@@ -21,7 +21,7 @@ namespace Douyu.Client
             _tmrDeleter.Elapsed += new ElapsedEventHandler(_timer_Elapsed);
         }
 
-        public Timerfile(string path)
+        public TimerFile(string path)
             : this(path, 10)
         { }
 

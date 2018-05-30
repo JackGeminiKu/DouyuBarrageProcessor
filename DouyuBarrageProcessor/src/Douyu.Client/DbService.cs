@@ -23,105 +23,7 @@ namespace Douyu.Client
             _conn.Open();
         }
 
-        public static ServerMessage[] GetMessages(int roomId)
-        {
-            const int TOP_COUNT = 10;
-            IDataReader reader = null;
-            List<ServerMessage> messages = new List<ServerMessage>();
-
-            // 获取弹幕
-            try {
-                reader = ExecuteReader(
-                    "select top({0}) * from chat_message where processed = 0 and room_id = {1} order by id asc",
-                   TOP_COUNT, roomId
-                );
-                while (reader.Read()) {
-                    ChatMessage chatMessage = new ChatMessage();
-                    chatMessage.Id = (int)reader["id"];
-                    chatMessage.Time = (DateTime)reader["time"];
-                    chatMessage.Text = (string)reader["text"];
-                    chatMessage.RoomId = (int)reader["room_id"];
-                    chatMessage.UserId = (int)reader["user_id"];
-                    chatMessage.UserName = (string)reader["user_name"];
-                    chatMessage.UserLevel = (byte)reader["user_level"];
-                    chatMessage.BadgeName = (string)reader["badge_name"];
-                    chatMessage.BadgeLevel = (byte)reader["badge_level"];
-                    chatMessage.BadgeRoom = (int)reader["badge_room"];
-                    messages.Add(chatMessage);
-                }
-            } finally {
-                if (reader != null) reader.Close();
-            }
-
-            // 获取礼物
-            try {
-                reader = ExecuteReader(
-                    "select top({0}) * from gift_message where processed = 0 and room_id = {1} order by id asc",
-                    TOP_COUNT, roomId
-                );
-                while (reader.Read()) {
-                    // 没找到该礼物信息?
-                    int giftId = (int)reader["gift_id"];
-                    Dictionary<string, object> giftInfo = DbService.QueryGiftInfo(giftId);
-                    if (giftInfo == null) {
-                        // set processed = 2, 表示没有找到该礼物的相关信息
-                        if (ExecuteNonQuery("update gift_message set processed = 2 where id = {0}", reader["id"]) != 1)
-                            LogService.ErrorFormat(
-                                "将礼物消息中的processed设置为2失败, 礼物id为{0}", giftId
-                            );
-                        LogService.ErrorFormat("系统中没有id为{0}的礼物", giftId);
-                        continue;
-                    }
-
-                    // 保存礼物信息
-                    GiftMessage giftMessage = new GiftMessage();
-                    giftMessage.Id = (int)reader["id"];
-                    giftMessage.Time = (DateTime)reader["time"];
-                    giftMessage.RoomId = (int)reader["room_id"];
-                    giftMessage.UserId = (int)reader["user_id"];
-                    giftMessage.UserName = (string)reader["user_name"];
-                    giftMessage.UserLevel = (byte)reader["user_level"];
-                    giftMessage.Weight = (int)reader["weight"];
-                    giftMessage.GiftId = (int)reader["gift_id"];
-                    giftMessage.GiftName = (string)giftInfo["name"];
-                    giftMessage.GiftExperience = (float)giftInfo["experience"];
-                    giftMessage.Hits = (short)reader["hits"];
-                    giftMessage.BadgeName = (string)reader["badge_name"];
-                    giftMessage.BadgeLevel = (byte)reader["badge_level"];
-                    giftMessage.BadgeRoom = (int)reader["badge_room"];
-                    messages.Add(giftMessage);
-                }
-            } finally {
-                if (reader != null) reader.Close();
-            }
-
-            // 获取酬勤
-            try {
-                reader = ExecuteReader(
-                    "select top({0}) * from chouqin_message where processed = 0 and room_id = {1} order by id asc",
-                    TOP_COUNT, roomId
-                );
-                while (reader.Read()) {
-                    ChouqinMessage chouqinMessage = new ChouqinMessage();
-                    chouqinMessage.Id = (int)reader["id"];
-                    chouqinMessage.Time = (DateTime)reader["time"];
-                    chouqinMessage.RoomId = (int)reader["room_id"];
-                    chouqinMessage.UserId = (int)reader["user_id"];
-                    chouqinMessage.UserLevel = (byte)reader["user_level"];
-                    chouqinMessage.Level = (byte)reader["level"];
-                    chouqinMessage.Count = (short)reader["count"];
-                    chouqinMessage.Hits = (short)reader["hits"];
-                    chouqinMessage.BadgeName = (string)reader["badge_name"];
-                    chouqinMessage.BadgeLevel = (byte)reader["badge_level"];
-                    chouqinMessage.BadgeRoom = (int)reader["badge_room"];
-                    messages.Add(chouqinMessage);
-                }
-            } finally {
-                if (reader != null) reader.Close();
-            }
-
-            return messages.ToArray();
-        }
+     
 
         #region "用户积分相关"
 
@@ -155,13 +57,13 @@ namespace Douyu.Client
             return score;
         }
 
-        public static void GetTopUsers(int roomId, out List<string> names, out List<int> scores)
+        public static void GetTopUsers(int roomId, int count, out List<string> names, out List<int> scores)
         {
             SqlDataReader reader = null;
             try {
                 string sql = string.Format(
-                    "select top (10) user_name, user_score from user_score where room_id = {0} order by user_score desc",
-                    roomId
+                    "select top ({0}) user_name, user_score from user_score where room_id = {1} order by user_score desc",
+                    count, roomId
                 );
                 reader = CreateCommand(sql).ExecuteReader();
                 names = new List<string>();
@@ -190,13 +92,13 @@ namespace Douyu.Client
                 LogService.ErrorFormat("更新电影积分失败: {0}", command);
         }
 
-        public static void GetTopMovies(int roomId, List<string> movieNames, List<int> movieScores)
+        public static void GetTopMovies(int roomId, int count, List<string> movieNames, List<int> movieScores)
         {
             SqlDataReader reader = null;
             try {
                 string sql = string.Format(
-                    "select top (10) movie_name, movie_score from movie_score where room_id = {0} order by movie_score desc",
-                    roomId
+                    "select top ({0}) movie_name, movie_score from movie_score where room_id = {1} order by movie_score desc",
+                    count, roomId
                 );
                 reader = CreateCommand(sql).ExecuteReader();
                 while (reader.Read()) {

@@ -46,5 +46,18 @@ namespace DouyuLiveAssistant.Properties {
                 this["SavedRoom"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local)\\SQLServer2008;Initial Catalog=Douyu2;User ID=sa;Password=5266" +
+            "4638")]
+        public string ConnectionString {
+            get {
+                return ((string)(this["ConnectionString"]));
+            }
+            set {
+                this["ConnectionString"] = value;
+            }
+        }
     }
 }

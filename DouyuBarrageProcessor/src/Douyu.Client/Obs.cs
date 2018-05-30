@@ -58,7 +58,7 @@ namespace Douyu.Client
         {
             var names = new List<string>();
             var scores = new List<int>();
-            DbService.GetTopMovies(RoomId, names, scores);
+            DbService.GetTopMovies(RoomId, 10, names, scores);
             var topMovies = "";
             for (var i = 0; i < names.Count; i++) {
                 topMovies += (topMovies == "" ? "" : "\n")
@@ -71,7 +71,7 @@ namespace Douyu.Client
             }
         }
 
-        private static string _topMovies = "";
+        private string _topMovies = "";
     }
 
 
@@ -92,7 +92,7 @@ namespace Douyu.Client
             var names = new List<string>();
             var scores = new List<int>();
             var topUsers = "";
-            DbService.GetTopUsers(RoomId, out names, out scores);
+            DbService.GetTopUsers(RoomId, 10, out names, out scores);
             for (var i = 0; i < names.Count; i++) {
                 topUsers += (topUsers == "" ? "" : "\n")
                     + string.Format("[{0:D2}] {1} {2}", i + 1, names[i], scores[i]);
@@ -115,26 +115,26 @@ namespace Douyu.Client
         readonly string MovieName = Obs.ObsDir + "PlayMovie_MovieName.txt";
         readonly string MovieFail = Obs.ObsDir + "PlayMovie_PlayFail.txt";
 
-        Timerfile _userName;
-        Timerfile _movieName;
-        Timerfile _playFail;
+        TimerFile _userNameFile;
+        TimerFile _movieNameFile;
+        TimerFile _playFailFile;
 
         public MovieMessage()
         {
-            _userName = new Timerfile(MovieName, 10);
-            _movieName = new Timerfile(UserName, 10);
-            _playFail = new Timerfile(MovieFail, 10);
+            _userNameFile = new TimerFile(MovieName, 10);
+            _movieNameFile = new TimerFile(UserName, 10);
+            _playFailFile = new TimerFile(MovieFail, 10);
         }
 
         public void PlayMovie(string userName, string movieName, int rank)
         {
-            _userName.WriteText(userName);
-            _movieName.WriteText("成功投票 " + movieName);
+            _userNameFile.WriteText(userName);
+            _movieNameFile.WriteText("成功投票 " + movieName);
         }
 
         public void PlayFail(string message)
         {
-            _playFail.WriteText(message);
+            _playFailFile.WriteText(message);
         }
 
         public void PlayFail(string format, params object[] args)
@@ -149,16 +149,16 @@ namespace Douyu.Client
     {
         readonly string MessageFile = Obs.ObsDir + "ThanksMessage.txt";
 
-        SelfDeletingFile _snapfile;
+        SelfDeletingFile _thanksMessageFile;
 
         public ThanksMessage()
         {
-            _snapfile = new SelfDeletingFile(MessageFile, 3, 10);
+            _thanksMessageFile = new SelfDeletingFile(MessageFile, 3, 10);
         }
 
         public void AddMessage(string message)
         {
-            _snapfile.AppendMessage(message);
+            _thanksMessageFile.AppendMessage(message);
         }
 
         public void AddMessage(string format, params object[] args)
@@ -173,16 +173,16 @@ namespace Douyu.Client
     {
         readonly string MessageFile = Obs.ObsDir + "OtherMessage.txt";
 
-        SelfDeletingFile _messageFile;
+        SelfDeletingFile _otherMessageFile;
 
         public OtherMessage()
         {
-            _messageFile = new SelfDeletingFile(MessageFile, 3, 10);
+            _otherMessageFile = new SelfDeletingFile(MessageFile, 3, 10);
         }
 
         public void AddMessage(string message)
         {
-            _messageFile.AppendMessage(message);
+            _otherMessageFile.AppendMessage(message);
         }
 
         public void AddMessage(string format, params object[] args)
