@@ -8,22 +8,18 @@ using Jack4net.Log;
 using Douyu.Messages;
 using System.Data.SqlClient;
 using Dapper;
+using DouyuLiveAssistant.Properties;
 
 namespace Douyu.Client
 {
     public static class DbService
     {
-        private static IDbConnection _conn;
+        static IDbConnection _conn;
 
         static DbService()
         {
-            string connectString = @"Data Source=10.0.0.2;Initial Catalog=Douyu2;User ID=sa;Password=Jack52664638;"
-                + "MultipleActiveResultSets=true";
-            _conn = new SqlConnection(connectString);
-            _conn.Open();
+            _conn = new SqlConnection(Settings.Default.ConnectionString);
         }
-
-     
 
         #region "用户积分相关"
 
@@ -47,7 +43,7 @@ namespace Douyu.Client
             }
         }
 
-        public static int QueryUserScore(int roomId, int userId)
+        public static int GetUserScore(int roomId, int userId)
         {
             // 如果没查到这个人呢? 积分为0?
             int score = ExecuteScalar<int>(

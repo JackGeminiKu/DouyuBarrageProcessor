@@ -113,7 +113,7 @@ namespace Douyu.Client
             // (1) 命令: 查询用户积分 #查询
             if (command == "查询") {
                 Obs.OtherMessage.AddMessage("[{0}]:\n当前积分 {1}",
-                    chatMessage.UserName, DbService.QueryUserScore(chatMessage.RoomId, chatMessage.UserId));
+                    chatMessage.UserName, DbService.GetUserScore(chatMessage.RoomId, chatMessage.UserId));
                 return;
             }
 
@@ -149,7 +149,7 @@ namespace Douyu.Client
                 }
 
                 // 检查用户积分是否够
-                var userScore = DbService.QueryUserScore(chatMessage.RoomId, chatMessage.UserId);
+                var userScore = DbService.GetUserScore(chatMessage.RoomId, chatMessage.UserId);
                 if (userScore < playScore) {
                     Obs.MovieMessage.PlayFail("[{0}]: 点播 {1} 失败, 积分不够, 当前积分{2}",
                         chatMessage.UserName, movieName, userScore);
@@ -187,7 +187,7 @@ namespace Douyu.Client
             // 感谢            
             Obs.ThanksMessage.AddMessage("感谢 {0} 送的1个{1}, 总积分{2}",
                 giftMessage.UserName, giftMessage.GiftName,
-                DbService.QueryUserScore(giftMessage.RoomId, giftMessage.UserId));
+                DbService.GetUserScore(giftMessage.RoomId, giftMessage.UserId));
 
             DbService.SetGiftMessageProcessed(giftMessage);
             OnGiftMessageProcessed(giftMessage);
@@ -210,7 +210,7 @@ namespace Douyu.Client
             // 感谢
             Obs.ThanksMessage.AddMessage("感谢 {0} 送的{1}, 总积分{2}",
                 chouqinMessage.UserName, chouqinMessage.ChouqinName,
-                DbService.QueryUserScore(chouqinMessage.RoomId, chouqinMessage.UserId));
+                DbService.GetUserScore(chouqinMessage.RoomId, chouqinMessage.UserId));
 
             DbService.SetChouqinMessageProcessed(chouqinMessage);
             OnChouqinMessageProcessed(chouqinMessage);

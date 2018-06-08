@@ -51,5 +51,6 @@
 送礼物得积分 100鱼丸=100分~2赞=1弱=400分~办卡1.5万~飞机28万~火箭150万~超级火箭=666万
 
 Settings
-Data Source=10.0.0.2;Initial Catalog=Douyu2;User ID=sa;Password=Jack52664638
-Data Source=(local)\SQLServer2008;Initial Catalog=Douyu2;User ID=sa;Password=52664638
+Data Source=10.0.0.2;Initial Catalog=Douyu2;User ID=sa;Password=Jack52664638;;MultipleActiveResultSets=true
+Data Source=(local)\SQLServer2008;Initial Catalog=Douyu2;User ID=sa;Password=52664638;;MultipleActiveResultSets=true
+  
