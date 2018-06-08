@@ -7,7 +7,7 @@ namespace Douyu
 {
     public class DouyuException : Exception
     {
-        public DouyuException(String message)
+        public DouyuException(string message)
             : base(message)
         { }
 

@@ -118,7 +118,7 @@ namespace Douyu.Client
             ) == 1;
         }
 
-        public static int GetMovieRank(string movieName, int roomId)
+        public static int GetMovieRank(int roomId, string movieName)
         {
             IDataReader reader = ExecuteReader(
                 "select * from movie_score where room_id = {0} order by movie_score desc", roomId
