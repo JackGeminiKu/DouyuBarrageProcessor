@@ -86,13 +86,13 @@ namespace Douyu.Client
         {
             // 发弹幕, 赚积分
             var score = ScoreManager.CalChatScore(chatMessage);
-            DbService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, score);
+            UserService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, score);
 
             // 处理弹幕命令
             if (chatMessage.Text.Trim().StartsWith("#"))
                 ProcessBarrageCommand(chatMessage);
 
-            DbService.SetChatMessageProcessed(chatMessage);
+            MessageService.SetChatMessageProcessed(chatMessage);
             OnChatMessageProcessed(chatMessage);
         }
 
@@ -113,7 +113,7 @@ namespace Douyu.Client
             // (1) 命令: 查询用户积分 #查询
             if (command == "查询") {
                 Obs.OtherMessage.AddMessage("[{0}]:\n当前积分 {1}",
-                    chatMessage.UserName, DbService.GetUserScore(chatMessage.RoomId, chatMessage.UserId));
+                    chatMessage.UserName, UserService.GetUserScore(chatMessage.RoomId, chatMessage.UserId));
                 return;
             }
 
@@ -125,9 +125,9 @@ namespace Douyu.Client
             if (match.Success) {
                 // 检查系统里面是否有这部电影
                 var movieName = match.Groups[1].Value;
-                if (!DbService.HasMovie(chatMessage.RoomId, movieName)) {
-                    var officialName = DbService.GetOfficialMovieName(chatMessage.RoomId, movieName);   // 用的是别名?
-                    if (officialName == "" || !DbService.HasMovie(chatMessage.RoomId, officialName)) {
+                if (!MovieService.HasMovie(chatMessage.RoomId, movieName)) {
+                    var officialName = MovieService.GetOfficialMovieName(chatMessage.RoomId, movieName);   // 用的是别名?
+                    if (officialName == "" || !MovieService.HasMovie(chatMessage.RoomId, officialName)) {
                         Obs.MovieMessage.PlayFail("[{0}]: 没有找到电影 {1}", chatMessage.UserName, movieName);
                         return;
                     }
@@ -135,7 +135,7 @@ namespace Douyu.Client
                 }
 
                 // 检查点播电影是否是当前正在播放的电影
-                var currentMovie = DbService.GetCurrentMovie(chatMessage.RoomId);
+                var currentMovie = MovieService.GetCurrentMovie(chatMessage.RoomId);
                 if (currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {
                     Obs.MovieMessage.PlayFail("[{0}]: {1} 正在播放, 请不要重复点播", chatMessage.UserName, movieName);
                     return;
@@ -149,7 +149,7 @@ namespace Douyu.Client
                 }
 
                 // 检查用户积分是否够
-                var userScore = DbService.GetUserScore(chatMessage.RoomId, chatMessage.UserId);
+                var userScore = UserService.GetUserScore(chatMessage.RoomId, chatMessage.UserId);
                 if (userScore < playScore) {
                     Obs.MovieMessage.PlayFail("[{0}]: 点播 {1} 失败, 积分不够, 当前积分{2}",
                         chatMessage.UserName, movieName, userScore);
@@ -157,11 +157,11 @@ namespace Douyu.Client
                 }
 
                 // 更新积分
-                DbService.AddMovieScore(chatMessage.RoomId, movieName, playScore);
-                DbService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, playScore * (-1));
+                MovieService.AddMovieScore(chatMessage.RoomId, movieName, playScore);
+                UserService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, playScore * (-1));
 
                 // 显示成功点播信息
-                var rank = DbService.GetMovieRank(chatMessage.RoomId, movieName);
+                var rank = MovieService.GetMovieRank(chatMessage.RoomId, movieName);
                 Obs.MovieMessage.PlayMovie(chatMessage.UserName, movieName, rank);
                 return;
             }
@@ -181,15 +181,15 @@ namespace Douyu.Client
                 // TBD
                 return;
             }
-            DbService.AddUserScore(giftMessage.RoomId, giftMessage.UserId, giftMessage.UserName, giftScore);
+            UserService.AddUserScore(giftMessage.RoomId, giftMessage.UserId, giftMessage.UserName, giftScore);
             OnUserScoreAdded(new ScoreAddedEventArgs(giftMessage.UserName, giftMessage.GiftName, giftScore));
 
             // 感谢            
             Obs.ThanksMessage.AddMessage("感谢 {0} 送的1个{1}, 总积分{2}",
                 giftMessage.UserName, giftMessage.GiftName,
-                DbService.GetUserScore(giftMessage.RoomId, giftMessage.UserId));
+                UserService.GetUserScore(giftMessage.RoomId, giftMessage.UserId));
 
-            DbService.SetGiftMessageProcessed(giftMessage);
+            MessageService.SetGiftMessageProcessed(giftMessage);
             OnGiftMessageProcessed(giftMessage);
         }
 
@@ -204,15 +204,15 @@ namespace Douyu.Client
                 return;
             }
 
-            DbService.AddUserScore(chouqinMessage.RoomId, chouqinMessage.UserId, chouqinMessage.UserName, chouqinScore);
+            UserService.AddUserScore(chouqinMessage.RoomId, chouqinMessage.UserId, chouqinMessage.UserName, chouqinScore);
             OnUserScoreAdded(new ScoreAddedEventArgs(chouqinMessage.UserName, "酬勤" + chouqinMessage.Level, chouqinScore));
 
             // 感谢
             Obs.ThanksMessage.AddMessage("感谢 {0} 送的{1}, 总积分{2}",
                 chouqinMessage.UserName, chouqinMessage.ChouqinName,
-                DbService.GetUserScore(chouqinMessage.RoomId, chouqinMessage.UserId));
+                UserService.GetUserScore(chouqinMessage.RoomId, chouqinMessage.UserId));
 
-            DbService.SetChouqinMessageProcessed(chouqinMessage);
+            MessageService.SetChouqinMessageProcessed(chouqinMessage);
             OnChouqinMessageProcessed(chouqinMessage);
         }
 

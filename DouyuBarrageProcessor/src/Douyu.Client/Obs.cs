@@ -58,7 +58,7 @@ namespace Douyu.Client
         {
             var names = new List<string>();
             var scores = new List<int>();
-            DbService.GetTopMovies(RoomId, 10, names, scores);
+            MovieService.GetTopMovies(RoomId, 10, ref names, ref scores);
             var topMovies = "";
             for (var i = 0; i < names.Count; i++) {
                 topMovies += (topMovies == "" ? "" : "\n")
@@ -92,7 +92,7 @@ namespace Douyu.Client
             var names = new List<string>();
             var scores = new List<int>();
             var topUsers = "";
-            DbService.GetTopUsers(RoomId, 10, out names, out scores);
+            UserService.GetTopUsers(RoomId, 10, ref names, ref scores);
             for (var i = 0; i < names.Count; i++) {
                 topUsers += (topUsers == "" ? "" : "\n")
                     + string.Format("[{0:D2}] {1} {2}", i + 1, names[i], scores[i]);

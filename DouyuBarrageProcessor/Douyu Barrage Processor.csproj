@@ -62,8 +62,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Douyu.Client\MovieService.cs" />
     <Compile Include="src\Douyu.Client\SelfDeletingFile.cs" />
     <Compile Include="src\Douyu.Client\TimerFile.cs" />
+    <Compile Include="src\Douyu.Client\UserService.cs" />
     <Compile Include="src\Douyu.Messages\ServerMessage.cs" />
     <Compile Include="src\Douyu.Client\ProcessorPanel.cs">
       <SubType>UserControl</SubType>
@@ -72,7 +74,7 @@
       <DependentUpon>ProcessorPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="src\Douyu.Client\ScoreManager.cs" />
-    <Compile Include="src\Douyu.Client\DbService.cs" />
+    <Compile Include="src\Douyu.Client\MessageService.cs" />
     <Compile Include="src\Douyu.Client\Obs.cs" />
     <Compile Include="src\Douyu.Events\ScoreAddedEventArgs.cs" />
     <Compile Include="src\frmMain.cs">
@@ -122,9 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="image\ant.ico" />
-    <Content Include="dll\log4net.dll" />
-    <Content Include="dll\NCalc.dll" />
-    <Content Include="dll\Simplo.dll" />
     <Content Include="processor.ico" />
     <Content Include="Read me.txt" />
   </ItemGroup>
