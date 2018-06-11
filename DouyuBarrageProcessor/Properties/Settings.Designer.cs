@@ -50,7 +50,7 @@ namespace DouyuLiveAssistant.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local)\\SQLServer2008;Initial Catalog=Douyu2;User ID=sa;Password=5266" +
-            "4638;;MultipleActiveResultSets=true")]
+            "4638;MultipleActiveResultSets=true")]
         public string ConnectionString {
             get {
                 return ((string)(this["ConnectionString"]));

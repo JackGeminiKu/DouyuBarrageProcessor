@@ -17,6 +17,7 @@ namespace Douyu.Client
         static UserService()
         {
             _conn = new SqlConnection(Settings.Default.ConnectionString);
+            _conn.Open();
         }
 
         public static void AddUserScore(int roomId, int userId, string userName, double userScore)

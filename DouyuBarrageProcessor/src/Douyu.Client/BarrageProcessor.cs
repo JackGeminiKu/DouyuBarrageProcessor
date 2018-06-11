@@ -38,8 +38,6 @@ namespace Douyu.Client
                     // 获取消息
                     var messages = new List<ServerMessage>();
                     messages.AddRange(ChatMessage.GetMessages(ProcessingRoom));
-                    messages.AddRange(GiftMessage.GetMessages(ProcessingRoom));
-                    messages.AddRange(ChouqinMessage.GetMessages(ProcessingRoom));
                     if (messages.Count == 0) {
                         MyThread.Wait(100);
                         continue;

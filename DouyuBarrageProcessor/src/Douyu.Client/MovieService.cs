@@ -16,6 +16,7 @@ namespace Douyu.Client
         static MovieService()
         {
             _conn = new SqlConnection(Settings.Default.ConnectionString);
+            _conn.Open();
         }
 
         public static void AddMovieScore(int roomId, string movieName, int movieScore)
