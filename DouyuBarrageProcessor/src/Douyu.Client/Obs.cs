@@ -46,6 +46,7 @@ namespace Douyu.Client
     public class TopMovies
     {
         readonly string TopMoviesFile = Obs.ObsDir + "TopMovies.txt";
+        const int MOVIE_COUNT = 10;
 
         public TopMovies(int roomId)
         {
@@ -58,7 +59,7 @@ namespace Douyu.Client
         {
             var names = new List<string>();
             var scores = new List<int>();
-            MovieService.GetTopMovies(RoomId, 10, ref names, ref scores);
+            MovieService.GetTopMovies(RoomId, MOVIE_COUNT, ref names, ref scores);
             var topMovies = "";
             for (var i = 0; i < names.Count; i++) {
                 topMovies += (topMovies == "" ? "" : "\n")
@@ -79,7 +80,7 @@ namespace Douyu.Client
     public class TopUsers
     {
         readonly string TopUsersFile = Obs.ObsDir + "TopUsers.txt";
-
+        const int USER_COUNT = 10;
         public TopUsers(int roomId)
         {
             RoomId = roomId;
@@ -92,7 +93,7 @@ namespace Douyu.Client
             var names = new List<string>();
             var scores = new List<int>();
             var topUsers = "";
-            UserService.GetTopUsers(RoomId, 10, ref names, ref scores);
+            UserService.GetTopUsers(RoomId, USER_COUNT, ref names, ref scores);
             for (var i = 0; i < names.Count; i++) {
                 topUsers += (topUsers == "" ? "" : "\n")
                     + string.Format("[{0:D2}] {1} {2}", i + 1, names[i], scores[i]);
@@ -111,19 +112,19 @@ namespace Douyu.Client
 
     public class MovieMessage
     {
+        const int MAX_TIME = 10;
         readonly string UserName = Obs.ObsDir + "PlayMovie_UserName.txt";
         readonly string MovieName = Obs.ObsDir + "PlayMovie_MovieName.txt";
         readonly string MovieFail = Obs.ObsDir + "PlayMovie_PlayFail.txt";
-
         TimerFile _userNameFile;
         TimerFile _movieNameFile;
         TimerFile _playFailFile;
 
         public MovieMessage()
         {
-            _userNameFile = new TimerFile(MovieName, 10);
-            _movieNameFile = new TimerFile(UserName, 10);
-            _playFailFile = new TimerFile(MovieFail, 10);
+            _userNameFile = new TimerFile(MovieName, MAX_TIME);
+            _movieNameFile = new TimerFile(UserName, MAX_TIME);
+            _playFailFile = new TimerFile(MovieFail, MAX_TIME);
         }
 
         public void PlayMovie(string userName, string movieName, int rank)
@@ -147,13 +148,14 @@ namespace Douyu.Client
 
     public class ThanksMessage
     {
+        const int MAX_LINE_COUNT = 3;
+        const int MAX_TIME = 10;
         readonly string MessageFile = Obs.ObsDir + "ThanksMessage.txt";
-
         SelfDeletingFile _thanksMessageFile;
 
         public ThanksMessage()
         {
-            _thanksMessageFile = new SelfDeletingFile(MessageFile, 3, 10);
+            _thanksMessageFile = new SelfDeletingFile(MessageFile, MAX_LINE_COUNT, MAX_TIME);
         }
 
         public void AddMessage(string message)
@@ -171,13 +173,14 @@ namespace Douyu.Client
 
     public class OtherMessage
     {
+        const int MAX_LINE_COUNT = 3;
+        const int MAX_TIME = 10;
         readonly string MessageFile = Obs.ObsDir + "OtherMessage.txt";
-
         SelfDeletingFile _otherMessageFile;
 
         public OtherMessage()
         {
-            _otherMessageFile = new SelfDeletingFile(MessageFile, 3, 10);
+            _otherMessageFile = new SelfDeletingFile(MessageFile, MAX_LINE_COUNT, MAX_TIME);
         }
 
         public void AddMessage(string message)

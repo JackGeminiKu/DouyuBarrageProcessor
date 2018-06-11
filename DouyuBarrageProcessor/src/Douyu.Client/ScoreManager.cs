@@ -13,19 +13,21 @@ namespace Douyu.Client
         public static double CalGiftScore(GiftMessage giftMessage)
         {
             double experience = giftMessage.GiftExperience;
-            if (experience <= 1) {
-                return experience * 100;
-            } else if (experience < 60) {
-                return experience * 200;
-            } else if (experience < 1000) {
-                return experience * 250;
-            } else if (experience < 5000) {
-                return experience * 280;
-            } else if (experience < 20000) {
-                return experience * 300;
+
+            if (experience >= 20000) {
+                experience *= 333;
+            } else if (experience >= 5000) {
+                experience *= 300;
+            } else if (experience >= 1000) {
+                experience *= 280;
+            } else if (experience >= 60) {
+                experience *= 250;
+            } else if (experience >= 2) {
+                experience *= 200;
             } else {
-                return experience * 333;
+                experience *= 100;
             }
+            return experience;
         }
 
         public static double CalChatScore(ChatMessage chatMessage)
@@ -47,7 +49,7 @@ namespace Douyu.Client
                     score = 130000;
                     break;
                 default:
-                    score = -1; // 未知酬勤
+                    score = 0; // 未知酬勤
                     break;
             }
             return score;

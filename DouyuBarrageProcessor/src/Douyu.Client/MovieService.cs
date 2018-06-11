@@ -18,13 +18,22 @@ namespace Douyu.Client
             _conn = new SqlConnection(Settings.Default.ConnectionString);
         }
 
-
         public static void AddMovieScore(int roomId, string movieName, int movieScore)
         {
             _conn.Execute(
                 "update MovieScore set MovieScore = MovieScore + @MovieScore where MovieName = @MovieName and RoomId = @RoomId",
                 new { MovieScore = movieScore, MovieName = movieName, RoomId = roomId }
             );
+        }
+
+        public static bool HasMovie(int roomId, string movieName)
+        {
+            var count = _conn.ExecuteScalar(
+                "select count(*) from MovieScore where RoomId = @RoomId and MovieName = @MovieName",
+                new { RoomId = roomId, MovieName = movieName }
+             );
+
+            return (int)count == 1;
         }
 
         public static void GetTopMovies(int roomId, int count, ref List<string> movieNames, ref List<int> movieScores)
@@ -37,16 +46,6 @@ namespace Douyu.Client
                 movieNames.Add(movie.MovieName);
                 movieScores.Add(movie.MovieScore);
             }
-        }
-
-        public static bool HasMovie(int roomId, string movieName)
-        {
-            var count = _conn.ExecuteScalar(
-                "select count(*) from MovieScore where RoomId = @RoomId and MovieName = @MovieName",
-                new { RoomId = roomId, MovieName = movieName }
-             );
-
-            return (int)count == 1;
         }
 
         public static int GetMovieRank(int roomId, string movieName)

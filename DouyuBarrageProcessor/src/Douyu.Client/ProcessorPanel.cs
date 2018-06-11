@@ -53,15 +53,16 @@ namespace Douyu.Client
             cboRoom.Enabled = false;
             btnStartProcess.Enabled = false;
             btnStopProces.Enabled = true;
-            if (bwDouyu.IsBusy)
-                MessageBox.Show("正在处理弹幕中...", "开始处理弹幕");
+            if (bwDouyu.IsBusy) {
+                MessageBox.Show("正在处理弹幕中, 请不要重复启动!", "开始处理弹幕");
+                return;
+            }
             bwDouyu.RunWorkerAsync();
         }
 
         private void bwDouyu_DoWork(object sender, DoWorkEventArgs e)
         {
-            _barrageProcessor.ChangeRoomId(int.Parse(cboRoom.GetTextCrossThread()));
-            _barrageProcessor.StartProcess();
+            _barrageProcessor.StartProcess(int.Parse(cboRoom.GetTextCrossThread()));
         }
 
         private void btnStopListen_Click(object sender, EventArgs e)
@@ -78,6 +79,13 @@ namespace Douyu.Client
             _barrageProcessor.StopProcess();
         }
 
+        private void btnSaveRoom_Click(object sender, EventArgs e)
+        {
+            DouyuLiveAssistant.Properties.Settings.Default.SavedRoom = int.Parse(cboRoom.Text);
+            DouyuLiveAssistant.Properties.Settings.Default.Save();
+            MessageBox.Show("房间" + cboRoom.Text + "已经保存完毕!", "保存房间", MessageBoxButtons.OK);
+        }
+
         private void tmrUpdateRank_Tick(object sender, EventArgs e)
         {
             tmrUpdateRank.Stop();
@@ -91,9 +99,9 @@ namespace Douyu.Client
         void barrageProcessor_ChatMessageProcessed(object sender, ServerMessageEventArgs<ChatMessage> e)
         {
             if (chkSimpleMode.Checked) {
-                AppendText(txtBarrage, "[{0}]: {1}", e.Message.UserName, e.Message.Text);
+                ShowMessage("[{0}]: {1}", e.Message.UserName, e.Message.Text);
             } else {
-                AppendText(txtBarrage, "[{0:HH:mm:ss}] [{1}] [弹幕] [{2}]: {3}",
+                ShowMessage("[{0:HH:mm:ss}] [{1}] [弹幕] [{2}]: {3}",
                     e.Message.Time, e.Message.RoomId, e.Message.UserName, e.Message.Text);
             }
         }
@@ -101,9 +109,9 @@ namespace Douyu.Client
         void barrageProcessor_GiftMessageProcessed(object sender, ServerMessageEventArgs<GiftMessage> e)
         {
             if (chkSimpleMode.Checked) {
-                AppendText(txtGift, "[{0}]: {1}", e.Message.UserName, e.Message.GiftName);
+                ShowMessage("[{0}]: {1}", e.Message.UserName, e.Message.GiftName);
             } else {
-                AppendText(txtGift, "[{0:HH:mm:ss}] [{1}] [礼物] [{2}]: {3}",
+                ShowMessage("[{0:HH:mm:ss}] [{1}] [礼物] [{2}]: {3}",
                     e.Message.Time, e.Message.RoomId, e.Message.UserName, e.Message.GiftName);
             }
         }
@@ -111,9 +119,9 @@ namespace Douyu.Client
         void barrageProcessor_ChouqinMessageProcessed(object sender, ServerMessageEventArgs<ChouqinMessage> e)
         {
             if (chkSimpleMode.Checked) {
-                AppendText(txtGift, "等级{0}酬勤", e.Message.Level);
+                ShowMessage("等级{0}酬勤", e.Message.Level);
             } else {
-                AppendText(txtGift, "[{0:HH:mm:ss}] [{1}] [酬勤]: 等级{2}",
+                ShowMessage("[{0:HH:mm:ss}] [{1}] [酬勤]: 等级{2}",
                     e.Message.Time, e.Message.RoomId, e.Message.Level);
             }
         }
@@ -121,28 +129,21 @@ namespace Douyu.Client
         void barrageProcessor_ScoreAdded(object sender, ScoreAddedEventArgs e)
         {
             if (chkSimpleMode.Checked) {
-                AppendText(txtGift, "[{0}]: + {1}", e.User, e.Score);
+                ShowMessage("[{0}]: + {1}", e.User, e.Score);
             } else {
-                AppendText(txtGift, "[{0:HH:mm:ss}] [{1}] [积分] [{2}]: + {3}",
+                ShowMessage("[{0:HH:mm:ss}] [{1}] [积分] [{2}]: + {3}",
                     DateTime.Now, cboRoom.GetTextCrossThread(), e.User, e.Score);
             }
         }
 
         #endregion
 
-        void AppendText(TextBox textBox, string format, params object[] args)
+        void ShowMessage(string format, params object[] args)
         {
-            if (textBox.GetLineCount() > 1000) {
-                textBox.ClearCrossThread();
+            if (txtMessage.GetLineCount() > 1000) {
+                txtMessage.ClearCrossThread();
             }
-            textBox.AppendLineCrossThread(format, args);
-        }
-
-        private void btnSaveRoom_Click(object sender, EventArgs e)
-        {
-            DouyuLiveAssistant.Properties.Settings.Default.SavedRoom = int.Parse(cboRoom.Text);
-            DouyuLiveAssistant.Properties.Settings.Default.Save();
-            MessageBox.Show("房间" + cboRoom.Text + "已经保存完毕!", "保存房间", MessageBoxButtons.OK);
+            txtMessage.AppendLineCrossThread(format, args);
         }
     }
 }

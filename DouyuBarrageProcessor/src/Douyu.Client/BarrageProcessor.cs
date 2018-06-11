@@ -19,29 +19,27 @@ namespace Douyu.Client
 {
     public class BarrageProcessor
     {
-        public int RoomId { get; private set; }
+        public int ProcessingRoom { get; private set; }
 
         public bool IsProcessing { get; private set; }
 
-        public void ChangeRoomId(int roomId)
-        {
-            RoomId = roomId;
-            Obs.Initialize(roomId);
-        }
-
         bool _stopProcess = false;
 
-        public void StartProcess()
+        public void StartProcess(int roomId)
         {
+            // 初始化房间
+            InitializeRoom(roomId);
+
+            // 开始处理
             _stopProcess = false;
             IsProcessing = true;
             while (!_stopProcess) {
                 try {
                     // 获取消息
                     var messages = new List<ServerMessage>();
-                    messages.AddRange(ChatMessage.GetMessages(RoomId));
-                    messages.AddRange(GiftMessage.GetMessages(RoomId));
-                    messages.AddRange(ChouqinMessage.GetMessages(RoomId));
+                    messages.AddRange(ChatMessage.GetMessages(ProcessingRoom));
+                    messages.AddRange(GiftMessage.GetMessages(ProcessingRoom));
+                    messages.AddRange(ChouqinMessage.GetMessages(ProcessingRoom));
                     if (messages.Count == 0) {
                         MyThread.Wait(100);
                         continue;
@@ -62,6 +60,12 @@ namespace Douyu.Client
                 }
             }
             IsProcessing = false;
+        }
+
+        void InitializeRoom(int roomId)
+        {
+            ProcessingRoom = roomId;
+            Obs.Initialize(roomId);
         }
 
         public void StopProcess()
@@ -197,7 +201,7 @@ namespace Douyu.Client
         {
             // 酬勤赚积分
             var chouqinScore = ScoreManager.CalChouqinScore(chouqinMessage);
-            if (chouqinScore < 0) {
+            if (chouqinScore == 0) {
                 LogService.ErrorFormat("获取酬勤积分失败, 酬勤等级为{0}", chouqinMessage.Level);
                 // 设置酬勤记录为处理失败状态
                 // TBD
