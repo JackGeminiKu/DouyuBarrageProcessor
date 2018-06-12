@@ -39,14 +39,14 @@
             this.processorPanel.Location = new System.Drawing.Point(0, 0);
             this.processorPanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.processorPanel.Name = "processorPanel";
-            this.processorPanel.Size = new System.Drawing.Size(984, 580);
-            this.processorPanel.TabIndex = 4;
+            this.processorPanel.Size = new System.Drawing.Size(756, 462);
+            this.processorPanel.TabIndex = 0;
             // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(984, 580);
+            this.ClientSize = new System.Drawing.Size(756, 462);
             this.Controls.Add(this.processorPanel);
             this.Font = new System.Drawing.Font("YaHei Consolas Hybrid", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -62,6 +62,7 @@
         #endregion
 
         private ProcessorPanel processorPanel;
+
     }
 }
 
