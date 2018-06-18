@@ -11,6 +11,10 @@ namespace Douyu
             : base(message)
         { }
 
+        public DouyuException(string format, params object[] args)
+            : this(string.Format(format, args))
+        { }
+
         public DouyuException(string message, Exception innerException)
             : base(message, innerException)
         { }

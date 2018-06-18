@@ -86,15 +86,21 @@ namespace Douyu.Client
 
         void ProcessChatMessage(ChatMessage chatMessage)
         {
-            // 发弹幕, 赚积分
-            var score = ScoreManager.CalChatScore(chatMessage);
-            UserService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, score);
+            try {
+                // 发弹幕, 赚积分
+                var score = ScoreManager.CalChatScore(chatMessage);
+                UserService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, score);
 
-            // 处理弹幕命令
-            if (chatMessage.Text.Trim().StartsWith("#"))
-                ProcessBarrageCommand(chatMessage);
+                // 处理弹幕命令
+                if (chatMessage.Text.Trim().StartsWith("#"))
+                    ProcessBarrageCommand(chatMessage);
 
-            MessageService.SetChatMessageProcessed(chatMessage);
+                ChatMessage.SetProcessResult(chatMessage, ProcessResult.Ok);
+            } catch (Exception) {
+                ChatMessage.SetProcessResult(chatMessage, ProcessResult.Error);
+                throw;
+            }
+
             OnChatMessageProcessed(chatMessage);
         }
 
@@ -138,7 +144,7 @@ namespace Douyu.Client
 
                 // 检查点播电影是否是当前正在播放的电影
                 var currentMovie = MovieService.GetCurrentMovie(chatMessage.RoomId);
-                if (currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {
+                if (currentMovie != null && currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {
                     Obs.MovieMessage.PlayFail("[{0}]: {1} 正在播放, 请不要重复点播", chatMessage.UserName, movieName);
                     return;
                 }
@@ -175,46 +181,45 @@ namespace Douyu.Client
 
         void ProcessGiftMessage(GiftMessage giftMessage)
         {
-            // 送礼物, 赚积分
-            var giftScore = ScoreManager.CalGiftScore(giftMessage);
-            if (giftScore < 0) {
-                LogService.ErrorFormat("获取礼物积分失败, 礼物ID为{0}", giftMessage.GiftId);
-                // 设置礼物记录为处理失败状态
-                // TBD
-                return;
+            try {
+                // 送礼物, 赚积分
+                var giftScore = ScoreManager.CalGiftScore(giftMessage);
+                UserService.AddUserScore(giftMessage.RoomId, giftMessage.UserId, giftMessage.UserName, giftScore);
+                OnUserScoreAdded(new ScoreAddedEventArgs(giftMessage.UserName, giftMessage.GiftName, giftScore));
+
+                // 感谢            
+                Obs.ThanksMessage.AddMessage("感谢 {0} 送的1个{1}, 总积分{2}",
+                    giftMessage.UserName, giftMessage.GiftName,
+                    UserService.GetUserScore(giftMessage.RoomId, giftMessage.UserId));
+
+                GiftMessage.SetProcessResult(giftMessage, ProcessResult.Ok);
+            } catch (Exception) {
+                GiftMessage.SetProcessResult(giftMessage, ProcessResult.Error);
+                throw;
             }
-            UserService.AddUserScore(giftMessage.RoomId, giftMessage.UserId, giftMessage.UserName, giftScore);
-            OnUserScoreAdded(new ScoreAddedEventArgs(giftMessage.UserName, giftMessage.GiftName, giftScore));
 
-            // 感谢            
-            Obs.ThanksMessage.AddMessage("感谢 {0} 送的1个{1}, 总积分{2}",
-                giftMessage.UserName, giftMessage.GiftName,
-                UserService.GetUserScore(giftMessage.RoomId, giftMessage.UserId));
-
-            MessageService.SetGiftMessageProcessed(giftMessage);
             OnGiftMessageProcessed(giftMessage);
         }
 
         void ProcessChouqinMessage(ChouqinMessage chouqinMessage)
         {
-            // 酬勤赚积分
-            var chouqinScore = ScoreManager.CalChouqinScore(chouqinMessage);
-            if (chouqinScore == 0) {
-                LogService.ErrorFormat("获取酬勤积分失败, 酬勤等级为{0}", chouqinMessage.Level);
-                // 设置酬勤记录为处理失败状态
-                // TBD
-                return;
+            try {
+                // 酬勤赚积分
+                var chouqinScore = ScoreManager.CalChouqinScore(chouqinMessage);
+                UserService.AddUserScore(chouqinMessage.RoomId, chouqinMessage.UserId, chouqinMessage.UserName, chouqinScore);
+                OnUserScoreAdded(new ScoreAddedEventArgs(chouqinMessage.UserName, "酬勤" + chouqinMessage.Level, chouqinScore));
+
+                // 感谢
+                Obs.ThanksMessage.AddMessage("感谢 {0} 送的{1}, 总积分{2}",
+                    chouqinMessage.UserName, chouqinMessage.ChouqinName,
+                    UserService.GetUserScore(chouqinMessage.RoomId, chouqinMessage.UserId));
+
+                ChouqinMessage.SetProcessResult(chouqinMessage, ProcessResult.Ok); ;
+            } catch (Exception) {
+                ChouqinMessage.SetProcessResult(chouqinMessage, ProcessResult.Error);
+                throw;
             }
 
-            UserService.AddUserScore(chouqinMessage.RoomId, chouqinMessage.UserId, chouqinMessage.UserName, chouqinScore);
-            OnUserScoreAdded(new ScoreAddedEventArgs(chouqinMessage.UserName, "酬勤" + chouqinMessage.Level, chouqinScore));
-
-            // 感谢
-            Obs.ThanksMessage.AddMessage("感谢 {0} 送的{1}, 总积分{2}",
-                chouqinMessage.UserName, chouqinMessage.ChouqinName,
-                UserService.GetUserScore(chouqinMessage.RoomId, chouqinMessage.UserId));
-
-            MessageService.SetChouqinMessageProcessed(chouqinMessage);
             OnChouqinMessageProcessed(chouqinMessage);
         }
 

@@ -71,7 +71,7 @@ namespace Douyu.Messages
             // 获取弹幕
             var chatMessages = _connection.Query<ChatMessage>(
                 "select top(@Count) Id, Time, Text, RoomId, UserId, UserName, UserLevel, BadgeName, BadgeLevel, BadgeRoom " +
-                "from ChatMessage where Processed = 0 and RoomId = @RoomId order by Id asc",
+                "from ChatMessage where ProcessResult = 0 and RoomId = @RoomId order by Id asc",
                 new { Count = TOP_COUNT, RoomId = roomId }
             );
             foreach (var message in chatMessages) {
@@ -81,18 +81,17 @@ namespace Douyu.Messages
             // 获取礼物
             var giftMessages = _connection.Query<GiftMessage>(
                 "select top(@Count) Id, Time, RoomId, UserId, UserName, UserLevel, Weight, GiftId, Hits, BadgeName, BadgeLevel, BadgeRoom " +
-                "from GiftMessage where Processed = 0 and RoomId = @RoomId order by Id asc",
+                "from GiftMessage where ProcessResult = 0 and RoomId = @RoomId order by Id asc",
                 new { Count = TOP_COUNT, RoomId = roomId }
             );
             foreach (var giftMessage in giftMessages) {
+                // 查询礼物名字和经验值
                 var giftCategory = _connection.Query(
                     "select Name, Experience from GiftCategory where Id = @Id",
                      new { Id = giftMessage.Id }
                 );
                 if (giftCategory.Count() == 0) {
-                    _connection.Execute(
-                        "update GiftMessage set Processed = 2 where id = @Id",
-                        new { Id = giftMessage.Id });
+                    GiftMessage.SetProcessResult(giftMessage, ProcessResult.Error);
                     LogService.ErrorFormat("系统中没有id为{0}的礼物", giftMessage.Id);
                     continue;
                 }
@@ -104,7 +103,7 @@ namespace Douyu.Messages
             // 获取酬勤
             var chouqinMessages = _connection.Query<ChouqinMessage>(
                 "select top(@Count) Id, Time, RoomId, UserId, UserLevel, Level, Count, Hits, BadgeName, BadgeLevel, BadgeRoom " +
-                "from ChouqinMessage where Processed = 0 and RoomId = @RoomId order by Id asc",
+                "from ChouqinMessage where ProcessResult = 0 and RoomId = @RoomId order by Id asc",
                 new { Count = TOP_COUNT, RoomId = roomId }
             );
             foreach (var message in chouqinMessages) {

@@ -49,8 +49,7 @@ namespace Douyu.Client
                     score = 130000;
                     break;
                 default:
-                    score = 0; // 未知酬勤
-                    break;
+                    throw new DouyuException("该等级酬勤(Level {0})还未设定积分值!", chouqinMessage.Level);
             }
             return score;
         }

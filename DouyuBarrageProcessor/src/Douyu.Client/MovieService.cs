@@ -66,12 +66,11 @@ namespace Douyu.Client
 
         public static string GetCurrentMovie(int roomId)
         {
-            // TBD: 还没改好 Confi表改为RoomInfo表?
-            var config = _conn.Query(
-                "select * from Config where name = 'current movie' and RoomId = @Roomid",
-                new { RoomId = roomId }
-                );
-            return config.First().value;
+            var currentMovie = _conn.ExecuteScalar<string>(
+             "select Value from RoomInfo where Name = @Name and RoomId = @Roomid",
+                new { Name = "current movie", RoomId = roomId }
+            );
+            return currentMovie;
         }
 
         public static string GetOfficialMovieName(int roomId, string aliasName)

@@ -22,5 +22,16 @@ namespace Douyu.Messages
         public string BadgeName { get; set; }
         public int BadgeLevel { get; set; }
         public int BadgeRoom { get; set; }
+
+        static IDbConnection _conn;
+
+        public static void SetProcessResult(ChatMessage message, ProcessResult result)
+        {
+            if (_conn == null)
+                _conn = new SqlConnection(Settings.Default.ConnectionString);
+            _conn.Execute("update ChatMessage set ProcessResult = @ProcessResult where Id = @Id",
+                new { ProcessResult = result, Id = message.Id }
+            );
+        }
     }
 }

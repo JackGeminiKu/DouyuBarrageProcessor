@@ -62,6 +62,7 @@
     <Compile Include="src\Douyu.Client\SelfDeletingFile.cs" />
     <Compile Include="src\Douyu.Client\TimerFile.cs" />
     <Compile Include="src\Douyu.Client\UserService.cs" />
+    <Compile Include="src\Douyu.Messages\ProcessResult.cs" />
     <Compile Include="src\Douyu.Messages\ServerMessage.cs" />
     <Compile Include="src\Douyu.Client\ProcessorPanel.cs">
       <SubType>UserControl</SubType>
@@ -70,7 +71,6 @@
       <DependentUpon>ProcessorPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="src\Douyu.Client\ScoreManager.cs" />
-    <Compile Include="src\Douyu.Client\MessageService.cs" />
     <Compile Include="src\Douyu.Client\Obs.cs" />
     <Compile Include="src\Douyu.Events\ScoreAddedEventArgs.cs" />
     <Compile Include="src\frmMain.cs">

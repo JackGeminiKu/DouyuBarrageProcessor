@@ -22,6 +22,32 @@ namespace Douyu.Messages
         public string BadgeName { get; set; }
         public byte BadgeLevel { get; set; }
         public int BadgeRoom { get; set; }
-        public string ChouqinName { get { return Level == 1 ? "初级酬勤" : (Level == 2 ? "中级酬勤" : "高级酬勤"); } }
+        public string ChouqinName
+        {
+            get
+            {
+                switch (Level) {
+                    case 1:
+                        return "初级酬勤";
+                    case 2:
+                        return "中级酬勤";
+                    case 3:
+                        return "高级酬勤";
+                    default:
+                        return "未知酬勤";
+                }
+            }
+        }
+
+        static IDbConnection _conn;
+
+        public static void SetProcessResult(ChouqinMessage message, ProcessResult result)
+        {
+            if (_conn == null)
+                _conn = new SqlConnection(Settings.Default.ConnectionString);
+            _conn.Execute("update ChouqinMessage set ProcessResult = @ProcessResult where Id = @Id",
+                new { ProcessResult = result, Id = message.Id }
+            );
+        }
     }
 }
