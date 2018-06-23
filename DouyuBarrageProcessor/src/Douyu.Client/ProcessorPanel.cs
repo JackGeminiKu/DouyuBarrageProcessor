@@ -23,7 +23,6 @@ namespace Douyu.Client
             _barrageProcessor.ChatMessageProcessed += barrageProcessor_ChatMessageProcessed;
             _barrageProcessor.GiftMessageProcessed += barrageProcessor_GiftMessageProcessed;
             _barrageProcessor.ChouqinMessageProcessed += barrageProcessor_ChouqinMessageProcessed;
-            _barrageProcessor.UserScoreAdded += barrageProcessor_ScoreAdded;
         }
 
         protected override void OnHandleDestroyed(EventArgs e)
@@ -31,7 +30,6 @@ namespace Douyu.Client
             _barrageProcessor.ChatMessageProcessed -= barrageProcessor_ChatMessageProcessed;
             _barrageProcessor.GiftMessageProcessed -= barrageProcessor_GiftMessageProcessed;
             _barrageProcessor.ChouqinMessageProcessed -= barrageProcessor_ChouqinMessageProcessed;
-            _barrageProcessor.UserScoreAdded -= barrageProcessor_ScoreAdded;
             _barrageProcessor.StopProcess();
             base.OnHandleDestroyed(e);
         }
@@ -108,6 +106,9 @@ namespace Douyu.Client
 
         void barrageProcessor_GiftMessageProcessed(object sender, ServerMessageEventArgs<GiftMessage> e)
         {
+            if (!chkShowGift.Checked)
+                return;
+
             if (chkSimpleMode.Checked) {
                 ShowMessage("[{0}]: {1}", e.Message.UserName, e.Message.GiftName);
             } else {
@@ -118,21 +119,14 @@ namespace Douyu.Client
 
         void barrageProcessor_ChouqinMessageProcessed(object sender, ServerMessageEventArgs<ChouqinMessage> e)
         {
+            if (!chkShowGift.Checked)
+                return;
+
             if (chkSimpleMode.Checked) {
                 ShowMessage("等级{0}酬勤", e.Message.Level);
             } else {
                 ShowMessage("[{0:HH:mm:ss}] [{1}] [酬勤]: 等级{2}",
                     e.Message.Time, e.Message.RoomId, e.Message.Level);
-            }
-        }
-
-        void barrageProcessor_ScoreAdded(object sender, ScoreAddedEventArgs e)
-        {
-            if (chkSimpleMode.Checked) {
-                ShowMessage("[{0}]: + {1}", e.User, e.Score);
-            } else {
-                ShowMessage("[{0:HH:mm:ss}] [{1}] [积分] [{2}]: + {3}",
-                    DateTime.Now, cboRoom.GetTextCrossThread(), e.User, e.Score);
             }
         }
 

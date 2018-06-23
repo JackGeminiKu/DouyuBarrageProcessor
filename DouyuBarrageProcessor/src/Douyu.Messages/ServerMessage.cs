@@ -88,7 +88,7 @@ namespace Douyu.Messages
                 // 查询礼物名字和经验值
                 var giftCategory = _connection.Query(
                     "select Name, Experience from GiftCategory where Id = @Id",
-                     new { Id = giftMessage.Id }
+                     new { Id = giftMessage.GiftId }
                 );
                 if (giftCategory.Count() == 0) {
                     GiftMessage.SetProcessResult(giftMessage, ProcessResult.Error);
