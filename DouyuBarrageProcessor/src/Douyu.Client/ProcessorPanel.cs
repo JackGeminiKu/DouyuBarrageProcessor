@@ -42,6 +42,8 @@ namespace Douyu.Client
 
         private void btnStartListen_Click(object sender, EventArgs e)
         {
+            if (!ValidateOperation("要开始处理弹幕, 请输入操作密码!"))
+                return;
             StartProcess();
         }
 
@@ -65,6 +67,8 @@ namespace Douyu.Client
 
         private void btnStopListen_Click(object sender, EventArgs e)
         {
+            if (!ValidateOperation("要停止处理弹幕, 请输入操作密码!"))
+                return;
             StopProcess();
         }
 
@@ -79,6 +83,8 @@ namespace Douyu.Client
 
         private void btnSaveRoom_Click(object sender, EventArgs e)
         {
+            if (!ValidateOperation("要保存房间号, 请输入操作密码!"))
+                return;
             DouyuLiveAssistant.Properties.Settings.Default.SavedRoom = int.Parse(cboRoom.Text);
             DouyuLiveAssistant.Properties.Settings.Default.Save();
             MessageBox.Show("房间" + cboRoom.Text + "已经保存完毕!", "保存房间", MessageBoxButtons.OK);
@@ -138,6 +144,19 @@ namespace Douyu.Client
                 txtMessage.ClearCrossThread();
             }
             txtMessage.AppendLineCrossThread(format, args);
+        }
+
+        bool ValidateOperation(string message)
+        {
+            var password = "";
+            if (PasswordBox.ShowDialog(message, out password) == DialogResult.Cancel) {
+                return false;
+            }
+            if (password != "52664638") {
+                MessageBox.Show("密码错误", "密码", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            return true;
         }
     }
 }
