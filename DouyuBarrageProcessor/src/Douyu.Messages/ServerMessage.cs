@@ -60,7 +60,7 @@ namespace Douyu.Messages
 
         static IDbConnection _connection;
 
-        public static ServerMessage[] GetMessages(int roomId)
+        public static ServerMessage[] GetMessages(string roomId)
         {
             if (_connection == null)
                 _connection = new SqlConnection(Settings.Default.ConnectionString);
@@ -80,23 +80,11 @@ namespace Douyu.Messages
 
             // 获取礼物
             var giftMessages = _connection.Query<GiftMessage>(
-                "select top(@Count) Id, Time, RoomId, UserId, UserName, UserLevel, Weight, GiftId, Hits, BadgeName, BadgeLevel, BadgeRoom " +
+                "select top(@Count) Id, Time, RoomId, UserId, UserName, UserLevel, Weight, GiftId, GiftName, GiftPrice, GiftExperience, GiftDevote, Hits, BadgeName, BadgeLevel, BadgeRoom " +
                 "from GiftMessage where ProcessResult = 0 and RoomId = @RoomId order by Id asc",
                 new { Count = TOP_COUNT, RoomId = roomId }
             );
             foreach (var giftMessage in giftMessages) {
-                // 查询礼物名字和经验值
-                var giftCategory = _connection.Query(
-                    "select Name, Experience from GiftCategory where Id = @Id",
-                     new { Id = giftMessage.GiftId }
-                );
-                if (giftCategory.Count() == 0) {
-                    GiftMessage.SetProcessResult(giftMessage, ProcessResult.Error);
-                    LogService.ErrorFormat("系统中没有id为{0}的礼物", giftMessage.Id);
-                    continue;
-                }
-                giftMessage.GiftName = giftCategory.First().Name;
-                giftMessage.GiftExperience = giftCategory.First().Experience;
                 messages.Add(giftMessage);
             }
 

@@ -12,7 +12,8 @@ namespace Douyu.Messages
     public class ChouqinMessage : ServerMessage
     {
         public int Id { get; set; }
-        public int RoomId { get; set; }
+        public DateTime Time { get; set; }
+        public string RoomId { get; set; }
         public byte Level { get; set; }
         public short Count { get; set; }
         public short Hits { get; set; }
@@ -22,6 +23,8 @@ namespace Douyu.Messages
         public string BadgeName { get; set; }
         public byte BadgeLevel { get; set; }
         public int BadgeRoom { get; set; }
+        public int ProcessResult { get; set; }
+
         public string ChouqinName
         {
             get

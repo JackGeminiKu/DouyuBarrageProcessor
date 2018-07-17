@@ -5,9 +5,6 @@
     <Setting Name="MovieDir" Type="System.String" Scope="User">
       <Value Profile="(Default)">D:\DouyuBarrageProcessor\movies\</Value>
     </Setting>
-    <Setting Name="SavedRoom" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">122402</Value>
-    </Setting>
     <Setting Name="ConnectionString" Type="System.String" Scope="User">
       <Value Profile="(Default)">Data Source=10.0.0.2;Initial Catalog=Douyu2;User ID=sa;Password=Jack52664638;MultipleActiveResultSets=true</Value>
     </Setting>

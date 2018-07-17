@@ -12,10 +12,10 @@ namespace Douyu.Client
 {
     public static class Obs
     {
-        public static void Initialize(int roomId)
+        public static void Initialize(string roomId)
         {
             if (!Directory.Exists(ObsDir))
-                Directory.CreateDirectory(Obs.ObsDir);
+                Directory.CreateDirectory(ObsDir);
 
             TopMovies = new TopMovies(roomId);
             TopMovies.Update();
@@ -37,7 +37,7 @@ namespace Douyu.Client
 
         public static string ObsDir
         {
-            get { return JApplication.RootPath + @"\OBS\"; }
+            get { return JApplication.RootPath + @"OBS\"; }
         }
     }
 
@@ -48,12 +48,12 @@ namespace Douyu.Client
         readonly string TopMoviesFile = Obs.ObsDir + "TopMovies.txt";
         const int MOVIE_COUNT = 10;
 
-        public TopMovies(int roomId)
+        public TopMovies(string roomId)
         {
             RoomId = roomId;
         }
 
-        public int RoomId { get; private set; }
+        public string RoomId { get; private set; }
 
         public void Update()
         {
@@ -80,13 +80,15 @@ namespace Douyu.Client
     public class TopUsers
     {
         readonly string TopUsersFile = Obs.ObsDir + "TopUsers.txt";
+
         const int USER_COUNT = 10;
-        public TopUsers(int roomId)
+
+        public TopUsers(string roomId)
         {
             RoomId = roomId;
         }
 
-        public int RoomId { get; private set; }
+        public string RoomId { get; private set; }
 
         public void Update()
         {
@@ -115,7 +117,7 @@ namespace Douyu.Client
         const int MAX_TIME = 10;
         readonly string UserName = Obs.ObsDir + "PlayMovie_UserName.txt";
         readonly string MovieName = Obs.ObsDir + "PlayMovie_MovieName.txt";
-        readonly string MovieFail = Obs.ObsDir + "PlayMovie_PlayFail.txt";
+        readonly string PlayFail = Obs.ObsDir + "PlayMovie_PlayFail.txt";
         TimerFile _userNameFile;
         TimerFile _movieNameFile;
         TimerFile _playFailFile;
@@ -124,23 +126,23 @@ namespace Douyu.Client
         {
             _userNameFile = new TimerFile(MovieName, MAX_TIME);
             _movieNameFile = new TimerFile(UserName, MAX_TIME);
-            _playFailFile = new TimerFile(MovieFail, MAX_TIME);
+            _playFailFile = new TimerFile(PlayFail, MAX_TIME);
         }
 
         public void PlayMovie(string userName, string movieName, int rank)
         {
-            _userNameFile.WriteText(userName);
-            _movieNameFile.WriteText("成功投票 " + movieName);
+            _userNameFile.WriteLine(userName);
+            _movieNameFile.WriteLine("成功投票 " + movieName);
         }
 
-        public void PlayFail(string message)
+        public void ShowFail(string message)
         {
-            _playFailFile.WriteText(message);
+            _playFailFile.WriteLine(message);
         }
 
-        public void PlayFail(string format, params object[] args)
+        public void ShowFail(string format, params object[] args)
         {
-            PlayFail(string.Format(format, args));
+            ShowFail(string.Format(format, args));
         }
     }
 
@@ -160,7 +162,7 @@ namespace Douyu.Client
 
         public void AddMessage(string message)
         {
-            _thanksMessageFile.AppendMessage(message);
+            _thanksMessageFile.WriteLine(message);
         }
 
         public void AddMessage(string format, params object[] args)
@@ -185,7 +187,7 @@ namespace Douyu.Client
 
         public void AddMessage(string message)
         {
-            _otherMessageFile.AppendMessage(message);
+            _otherMessageFile.WriteLine(message);
         }
 
         public void AddMessage(string format, params object[] args)

@@ -23,27 +23,23 @@ namespace Douyu.Client
             _tmrDeleter.Elapsed += _timer_Elapsed;
         }
 
-        public SelfDeletingFile(string filePath)
-            : this(filePath, 5, 10)
-        { }
-
         public string FilePath { get; private set; }
 
         public int MaxLines { get; set; }
 
-        public void AppendMessage(string messsage)
+        public void WriteLine(string messsage)
         {
             try {
                 _mutex.WaitOne();
-                AppendMessage(FilePath, messsage);
+                WriteLine(FilePath, messsage);
             } catch (Exception ex) {
-                LogService.Error("Append text exception: " + ex.Message, ex);
+                LogService.Error("WriteLine() Exception: " + ex.Message, ex);
             } finally {
                 _mutex.ReleaseMutex();
             }
         }
 
-        void AppendMessage(string filePath, string message)
+        void WriteLine(string filePath, string message)
         {
             // 还没有message文件?
             if (!File.Exists(filePath)) {
@@ -74,14 +70,12 @@ namespace Douyu.Client
             try {
                 _mutex.WaitOne();
 
-                if (!File.Exists(FilePath)) {
+                if (!File.Exists(FilePath))
                     return;
-                }
 
                 FileInfo fileInfo = new FileInfo(FilePath);
-                if (fileInfo.Length == 0) {
+                if (fileInfo.Length == 0)
                     return;
-                }
 
                 // 删除第一行
                 var lines = File.ReadAllLines(FilePath);
@@ -91,7 +85,7 @@ namespace Douyu.Client
                 }
                 File.WriteAllText(FilePath, contents);
             } catch (Exception ex) {
-                LogService.Error("Auto delete exception: " + ex.Message, ex);
+                LogService.Error("Auto Delete Exception: " + ex.Message, ex);
             } finally {
                 _mutex.ReleaseMutex();
             }

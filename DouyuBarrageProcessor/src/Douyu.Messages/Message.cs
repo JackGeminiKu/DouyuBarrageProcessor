@@ -30,7 +30,7 @@ namespace Douyu.Messages
                 result.Add(0);
                 result.AddRange(Encoding.UTF8.GetBytes(messageText));
             } catch (Exception e) {
-                LogService.Error(e.Message, e);
+                LogService.Error("获取弹幕字节异常!", e);
                 throw;
             }
 

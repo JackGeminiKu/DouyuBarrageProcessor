@@ -70,9 +70,8 @@
     <Compile Include="src\Douyu.Client\ProcessorPanel.Designer.cs">
       <DependentUpon>ProcessorPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="src\Douyu.Client\ScoreManager.cs" />
+    <Compile Include="src\Douyu.Client\ScoreService.cs" />
     <Compile Include="src\Douyu.Client\Obs.cs" />
-    <Compile Include="src\Douyu.Events\ScoreAddedEventArgs.cs" />
     <Compile Include="src\frmMain.cs">
       <SubType>Form</SubType>
     </Compile>

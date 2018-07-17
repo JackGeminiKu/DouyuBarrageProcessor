@@ -6,13 +6,13 @@ using System.Text;
 
 namespace Douyu.Events
 {
-    public class ServerMessageEventArgs<T> : EventArgs where T : ServerMessage
+    public class ServerMessageEventArgs<M> : EventArgs where M : ServerMessage
     {
-        public ServerMessageEventArgs(T message)
+        public ServerMessageEventArgs(M message)
         {
             Message = message;
         }
 
-        public T Message { get; private set; }
+        public M Message { get; private set; }
     }
 }

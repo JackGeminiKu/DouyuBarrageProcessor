@@ -19,7 +19,7 @@ namespace Douyu.Client
             _conn.Open();
         }
 
-        public static void AddMovieScore(int roomId, string movieName, int movieScore)
+        public static void AddScore(string roomId, string movieName, int movieScore)
         {
             _conn.Execute(
                 "update MovieScore set MovieScore = MovieScore + @MovieScore where MovieName = @MovieName and RoomId = @RoomId",
@@ -27,7 +27,7 @@ namespace Douyu.Client
             );
         }
 
-        public static bool HasMovie(int roomId, string movieName)
+        public static bool HasMovie(string roomId, string movieName)
         {
             var count = _conn.ExecuteScalar(
                 "select count(*) from MovieScore where RoomId = @RoomId and MovieName = @MovieName",
@@ -37,11 +37,11 @@ namespace Douyu.Client
             return (int)count == 1;
         }
 
-        public static void GetTopMovies(int roomId, int count, ref List<string> movieNames, ref List<int> movieScores)
+        public static void GetTopMovies(string roomId, int count, ref List<string> movieNames, ref List<int> movieScores)
         {
             var movies = _conn.Query(
                 "select top (@Count) MovieName, MovieScore from MovieScore where RoomId = @RoomId order by MovieScore desc",
-                new { Count = count, Roomid = roomId }
+                new { Count = count, RoomId = roomId }
             );
             foreach (var movie in movies) {
                 movieNames.Add(movie.MovieName);
@@ -49,7 +49,7 @@ namespace Douyu.Client
             }
         }
 
-        public static int GetMovieRank(int roomId, string movieName)
+        public static int GetMovieRank(string roomId, string movieName)
         {
             var movies = _conn.Query(
                 "select MovieName from MovieScore where RoomId = @RoomId order by MovieScore desc",
@@ -60,20 +60,19 @@ namespace Douyu.Client
                     return i;
                 }
             }
-
             return -1;
         }
 
-        public static string GetCurrentMovie(int roomId)
+        public static string GetCurrentMovie(string roomId)
         {
             var currentMovie = _conn.ExecuteScalar<string>(
-             "select Value from RoomInfo where Name = @Name and RoomId = @Roomid",
+             "select Value from RoomInfo where Name = @Name and RoomId = @RoomId",
                 new { Name = "current movie", RoomId = roomId }
             );
             return currentMovie;
         }
 
-        public static string GetOfficialMovieName(int roomId, string aliasName)
+        public static string GetOfficialMovieName(string roomId, string aliasName)
         {
             var movieAlias = _conn.Query(
                 "select MovieName from MovieAlias where RoomId = @RoomId and MovieAlias = @AliasName",

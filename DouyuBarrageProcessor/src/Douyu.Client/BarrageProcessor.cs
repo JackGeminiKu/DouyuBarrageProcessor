@@ -19,16 +19,23 @@ namespace Douyu.Client
 {
     public class BarrageProcessor
     {
-        public int ProcessingRoom { get; private set; }
+        public BarrageProcessor() { }
+
+        public BarrageProcessor(string roomId)
+        {
+            RoomId = roomId;
+        }
+
+        public string RoomId { get; set; }
 
         public bool IsProcessing { get; private set; }
 
-        bool _stopProcess = false;
+        bool _stopProcess = true;
 
-        public void StartProcess(int roomId)
+        public void StartProcess()
         {
             // 初始化房间
-            InitializeRoom(roomId);
+            Obs.Initialize(RoomId);
 
             // 开始处理
             _stopProcess = false;
@@ -36,9 +43,8 @@ namespace Douyu.Client
             while (!_stopProcess) {
                 try {
                     // 获取消息
-                    var messages = new List<ServerMessage>();
-                    messages.AddRange(ChatMessage.GetMessages(ProcessingRoom));
-                    if (messages.Count == 0) {
+                    var messages = ChatMessage.GetMessages(RoomId);
+                    if (messages.Length == 0) {
                         MyThread.Wait(100);
                         continue;
                     }
@@ -60,20 +66,16 @@ namespace Douyu.Client
             IsProcessing = false;
         }
 
-        void InitializeRoom(int roomId)
-        {
-            ProcessingRoom = roomId;
-            Obs.Initialize(roomId);
-        }
-
         public void StopProcess()
         {
             try {
+                const int STOP_TIMEOUT = 3000;
                 _stopProcess = true;
                 var stopwatch = Stopwatch.StartNew();
                 do {
-                    if (!IsProcessing) break;
-                } while (stopwatch.ElapsedMilliseconds < 3000);
+                    if (!IsProcessing)
+                        break;
+                } while (stopwatch.ElapsedMilliseconds < STOP_TIMEOUT);
                 if (IsProcessing)
                     throw new DouyuException("停止处理消息超时!");
             } catch (Exception ex) {
@@ -88,26 +90,25 @@ namespace Douyu.Client
         {
             try {
                 // 发弹幕, 赚积分
-                var score = ScoreManager.CalChatScore(chatMessage);
-                UserService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, score);
+                var score = ScoreService.CalScore(chatMessage);
+                UserService.AddScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, score);
 
                 // 处理弹幕命令
                 if (chatMessage.Text.Trim().StartsWith("#"))
-                    ProcessBarrageCommand(chatMessage);
+                    ProcessChatCommand(chatMessage);
 
                 ChatMessage.SetProcessResult(chatMessage, ProcessResult.Ok);
+                OnChatMessageProcessed(chatMessage);
             } catch (Exception) {
                 ChatMessage.SetProcessResult(chatMessage, ProcessResult.Error);
                 throw;
             }
-
-            OnChatMessageProcessed(chatMessage);
         }
 
-        void ProcessBarrageCommand(ChatMessage chatMessage)
+        void ProcessChatCommand(ChatMessage message)
         {
             // 去除#, 空格, 替换全角字符
-            var command = chatMessage.Text.Trim().Substring(1);
+            var command = message.Text.Trim().Substring(1);
             command = command.Replace('－', '-');
             command = command.Replace('（', '(');
             command = command.Replace('）', ')');
@@ -121,7 +122,7 @@ namespace Douyu.Client
             // (1) 命令: 查询用户积分 #查询
             if (command == "查询") {
                 Obs.OtherMessage.AddMessage("[{0}]:\n当前积分 {1}",
-                    chatMessage.UserName, UserService.GetUserScore(chatMessage.RoomId, chatMessage.UserId));
+                    message.UserName, UserService.GetScore(message.RoomId, message.UserId));
                 return;
             }
 
@@ -133,94 +134,88 @@ namespace Douyu.Client
             if (match.Success) {
                 // 检查系统里面是否有这部电影
                 var movieName = match.Groups[1].Value;
-                if (!MovieService.HasMovie(chatMessage.RoomId, movieName)) {
-                    var officialName = MovieService.GetOfficialMovieName(chatMessage.RoomId, movieName);   // 用的是别名?
-                    if (officialName == "" || !MovieService.HasMovie(chatMessage.RoomId, officialName)) {
-                        Obs.MovieMessage.PlayFail("[{0}]: 没有找到电影 {1}", chatMessage.UserName, movieName);
+                if (!MovieService.HasMovie(message.RoomId, movieName)) {
+                    var officialName = MovieService.GetOfficialMovieName(message.RoomId, movieName);   // 用的是别名?
+                    if (officialName == "" || !MovieService.HasMovie(message.RoomId, officialName)) {
+                        Obs.MovieMessage.ShowFail("[{0}]: 没有找到电影 {1}", message.UserName, movieName);
                         return;
                     }
                     movieName = officialName;
                 }
 
                 // 检查点播电影是否是当前正在播放的电影
-                var currentMovie = MovieService.GetCurrentMovie(chatMessage.RoomId);
+                var currentMovie = MovieService.GetCurrentMovie(message.RoomId);
                 if (currentMovie != null && currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {
-                    Obs.MovieMessage.PlayFail("[{0}]: {1} 正在播放, 请不要重复点播", chatMessage.UserName, movieName);
+                    Obs.MovieMessage.ShowFail("[{0}]: {1} 正在播放, 请不要重复点播", message.UserName, movieName);
                     return;
                 }
 
                 // 检查积分是否溢出
-                var playScore = 0;
-                if (!int.TryParse(match.Groups[2].Value, out playScore)) {
-                    Obs.MovieMessage.PlayFail("[{0}]: 点播 {1} 失败, 积分无效", chatMessage.UserName, movieName);
+                var movieScore = 0;
+                if (!int.TryParse(match.Groups[2].Value, out movieScore)) {
+                    Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分无效", message.UserName, movieName);
                     return;
                 }
 
                 // 检查用户积分是否够
-                var userScore = UserService.GetUserScore(chatMessage.RoomId, chatMessage.UserId);
-                if (userScore < playScore) {
-                    Obs.MovieMessage.PlayFail("[{0}]: 点播 {1} 失败, 积分不够, 当前积分{2}",
-                        chatMessage.UserName, movieName, userScore);
+                var userScore = UserService.GetScore(message.RoomId, message.UserId);
+                if (userScore < movieScore) {
+                    Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分不够, 当前积分 {2}",
+                        message.UserName, movieName, userScore);
                     return;
                 }
 
                 // 更新积分
-                MovieService.AddMovieScore(chatMessage.RoomId, movieName, playScore);
-                UserService.AddUserScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, playScore * (-1));
+                MovieService.AddScore(message.RoomId, movieName, movieScore);
+                UserService.AddScore(message.RoomId, message.UserId, message.UserName, movieScore * (-1));
 
                 // 显示成功点播信息
-                var rank = MovieService.GetMovieRank(chatMessage.RoomId, movieName);
-                Obs.MovieMessage.PlayMovie(chatMessage.UserName, movieName, rank);
+                var rank = MovieService.GetMovieRank(message.RoomId, movieName);
+                Obs.MovieMessage.PlayMovie(message.UserName, movieName, rank);
                 return;
             }
 
             // 未知命令
-            Obs.OtherMessage.AddMessage("[{0}]: 无效命令, {1}", chatMessage.UserName, command);
+            Obs.OtherMessage.AddMessage("[{0}]: 无效命令, {1}", message.UserName, command);
             return;
         }
 
-        void ProcessGiftMessage(GiftMessage giftMessage)
+        void ProcessGiftMessage(GiftMessage message)
         {
             try {
                 // 送礼物, 赚积分
-                var giftScore = ScoreManager.CalGiftScore(giftMessage);
-                UserService.AddUserScore(giftMessage.RoomId, giftMessage.UserId, giftMessage.UserName, giftScore);
-                OnUserScoreAdded(new ScoreAddedEventArgs(giftMessage.UserName, giftMessage.GiftName, giftScore));
+                var giftScore = ScoreService.CalScore(message);
+                UserService.AddScore(message.RoomId, message.UserId, message.UserName, giftScore);
 
                 // 感谢            
-                Obs.ThanksMessage.AddMessage("感谢 {0} 送的1个{1}, 总积分{2}",
-                    giftMessage.UserName, giftMessage.GiftName,
-                    UserService.GetUserScore(giftMessage.RoomId, giftMessage.UserId));
+                Obs.ThanksMessage.AddMessage("感谢 {0} 送的 {1}, 总积分 {2}",
+                    message.UserName, message.GiftName, UserService.GetScore(message.RoomId, message.UserId));
 
-                GiftMessage.SetProcessResult(giftMessage, ProcessResult.Ok);
+                GiftMessage.SetProcessResult(message, ProcessResult.Ok);
+                OnGiftMessageProcessed(message);
             } catch (Exception) {
-                GiftMessage.SetProcessResult(giftMessage, ProcessResult.Error);
+                GiftMessage.SetProcessResult(message, ProcessResult.Error);
                 throw;
             }
-
-            OnGiftMessageProcessed(giftMessage);
         }
 
-        void ProcessChouqinMessage(ChouqinMessage chouqinMessage)
+        void ProcessChouqinMessage(ChouqinMessage message)
         {
             try {
                 // 酬勤赚积分
-                var chouqinScore = ScoreManager.CalChouqinScore(chouqinMessage);
-                UserService.AddUserScore(chouqinMessage.RoomId, chouqinMessage.UserId, chouqinMessage.UserName, chouqinScore);
-                OnUserScoreAdded(new ScoreAddedEventArgs(chouqinMessage.UserName, "酬勤" + chouqinMessage.Level, chouqinScore));
+                var score = ScoreService.CalScore(message);
+                UserService.AddScore(message.RoomId, message.UserId, message.UserName, score);
 
                 // 感谢
-                Obs.ThanksMessage.AddMessage("感谢 {0} 送的{1}, 总积分{2}",
-                    chouqinMessage.UserName, chouqinMessage.ChouqinName,
-                    UserService.GetUserScore(chouqinMessage.RoomId, chouqinMessage.UserId));
+                Obs.ThanksMessage.AddMessage("感谢 {0} 送的 {1}, 总积分 {2}",
+                    message.UserName, message.ChouqinName, UserService.GetScore(message.RoomId, message.UserId));
 
-                ChouqinMessage.SetProcessResult(chouqinMessage, ProcessResult.Ok); ;
+                ChouqinMessage.SetProcessResult(message, ProcessResult.Ok); ;
+                OnChouqinMessageProcessed(message);
             } catch (Exception) {
-                ChouqinMessage.SetProcessResult(chouqinMessage, ProcessResult.Error);
+                ChouqinMessage.SetProcessResult(message, ProcessResult.Error);
                 throw;
             }
-
-            OnChouqinMessageProcessed(chouqinMessage);
         }
 
         #endregion
@@ -230,30 +225,23 @@ namespace Douyu.Client
         public event EventHandler<ServerMessageEventArgs<ChatMessage>> ChatMessageProcessed;
         public event EventHandler<ServerMessageEventArgs<GiftMessage>> GiftMessageProcessed;
         public event EventHandler<ServerMessageEventArgs<ChouqinMessage>> ChouqinMessageProcessed;
-        public event EventHandler<ScoreAddedEventArgs> UserScoreAdded;
 
-        protected void OnChatMessageProcessed(ChatMessage chatMessage)
+        protected void OnChatMessageProcessed(ChatMessage message)
         {
             if (ChatMessageProcessed != null)
-                ChatMessageProcessed(this, new ServerMessageEventArgs<ChatMessage>(chatMessage));
+                ChatMessageProcessed(this, new ServerMessageEventArgs<ChatMessage>(message));
         }
 
-        protected void OnGiftMessageProcessed(GiftMessage giftMessage)
+        protected void OnGiftMessageProcessed(GiftMessage message)
         {
             if (GiftMessageProcessed != null)
-                GiftMessageProcessed(this, new ServerMessageEventArgs<GiftMessage>(giftMessage));
+                GiftMessageProcessed(this, new ServerMessageEventArgs<GiftMessage>(message));
         }
 
         protected void OnChouqinMessageProcessed(ChouqinMessage message)
         {
             if (ChouqinMessageProcessed != null)
                 ChouqinMessageProcessed(this, new ServerMessageEventArgs<ChouqinMessage>(message));
-        }
-
-        protected void OnUserScoreAdded(ScoreAddedEventArgs args)
-        {
-            if (UserScoreAdded != null)
-                UserScoreAdded(this, args);
         }
 
         #endregion

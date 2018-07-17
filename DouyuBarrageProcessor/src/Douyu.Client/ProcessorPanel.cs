@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using Douyu.Events;
 using Douyu.Messages;
+using Jack4net.Log;
 
 namespace Douyu.Client
 {
@@ -30,29 +31,14 @@ namespace Douyu.Client
             _barrageProcessor.ChatMessageProcessed -= barrageProcessor_ChatMessageProcessed;
             _barrageProcessor.GiftMessageProcessed -= barrageProcessor_GiftMessageProcessed;
             _barrageProcessor.ChouqinMessageProcessed -= barrageProcessor_ChouqinMessageProcessed;
-            _barrageProcessor.StopProcess();
             base.OnHandleDestroyed(e);
         }
 
-        public void StartProcess(int roomId)
-        {
-            cboRoom.Text = roomId.ToString();
-            StartProcess();
-        }
+        public string RoomId { get; set; }
 
-        private void btnStartListen_Click(object sender, EventArgs e)
-        {
-            if (!ValidateOperation("要开始处理弹幕, 请输入操作密码!"))
-                return;
-            StartProcess();
-        }
-
-        void StartProcess()
+        public void StartProcess()
         {
             tmrUpdateRank.Start();
-            cboRoom.Enabled = false;
-            btnStartProcess.Enabled = false;
-            btnStopProces.Enabled = true;
             if (bwDouyu.IsBusy) {
                 MessageBox.Show("正在处理弹幕中, 请不要重复启动!", "开始处理弹幕");
                 return;
@@ -62,81 +48,45 @@ namespace Douyu.Client
 
         private void bwDouyu_DoWork(object sender, DoWorkEventArgs e)
         {
-            _barrageProcessor.StartProcess(int.Parse(cboRoom.GetTextCrossThread()));
+            _barrageProcessor.RoomId = RoomId;
+            _barrageProcessor.StartProcess();
         }
 
-        private void btnStopListen_Click(object sender, EventArgs e)
-        {
-            if (!ValidateOperation("要停止处理弹幕, 请输入操作密码!"))
-                return;
-            StopProcess();
-        }
-
-        private void StopProcess()
+        public void StopProcess()
         {
             tmrUpdateRank.Stop();
-            cboRoom.Enabled = true;
-            btnStartProcess.Enabled = true;
-            btnStopProces.Enabled = false;
             _barrageProcessor.StopProcess();
-        }
-
-        private void btnSaveRoom_Click(object sender, EventArgs e)
-        {
-            if (!ValidateOperation("要保存房间号, 请输入操作密码!"))
-                return;
-            DouyuLiveAssistant.Properties.Settings.Default.SavedRoom = int.Parse(cboRoom.Text);
-            DouyuLiveAssistant.Properties.Settings.Default.Save();
-            MessageBox.Show("房间" + cboRoom.Text + "已经保存完毕!", "保存房间", MessageBoxButtons.OK);
         }
 
         private void tmrUpdateRank_Tick(object sender, EventArgs e)
         {
-            tmrUpdateRank.Stop();
-            Obs.TopMovies.Update();
-            Obs.TopUsers.Update();
-            tmrUpdateRank.Start();
+            try {
+                tmrUpdateRank.Stop();
+                Obs.TopMovies.Update();
+                Obs.TopUsers.Update();
+            } catch (Exception ex) {
+                LogService.Error("更新排名异常: " + ex.Message, ex);
+            } finally {
+                tmrUpdateRank.Start();
+            }
         }
 
         #region 弹幕消息
 
         void barrageProcessor_ChatMessageProcessed(object sender, ServerMessageEventArgs<ChatMessage> e)
         {
-            if (chkSimpleMode.Checked) {
-                ShowMessage("[{0}]: {1}", e.Message.UserName, e.Message.Text);
-            } else {
-                ShowMessage("[{0:HH:mm:ss}] [{1}] [弹幕] [{2}]: {3}",
-                    e.Message.Time, e.Message.RoomId, e.Message.UserName, e.Message.Text);
-            }
+            ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.Text);
         }
 
         void barrageProcessor_GiftMessageProcessed(object sender, ServerMessageEventArgs<GiftMessage> e)
         {
-            if (!chkShowGift.Checked)
-                return;
-
-            if (chkSimpleMode.Checked) {
-                ShowMessage("[{0}]: {1}", e.Message.UserName, e.Message.GiftName);
-            } else {
-                ShowMessage("[{0:HH:mm:ss}] [{1}] [礼物] [{2}]: {3}",
-                    e.Message.Time, e.Message.RoomId, e.Message.UserName, e.Message.GiftName);
-            }
+            ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.GiftName);
         }
 
         void barrageProcessor_ChouqinMessageProcessed(object sender, ServerMessageEventArgs<ChouqinMessage> e)
         {
-            if (!chkShowGift.Checked)
-                return;
-
-            if (chkSimpleMode.Checked) {
-                ShowMessage("等级{0}酬勤", e.Message.Level);
-            } else {
-                ShowMessage("[{0:HH:mm:ss}] [{1}] [酬勤]: 等级{2}",
-                    e.Message.Time, e.Message.RoomId, e.Message.Level);
-            }
+            ShowMessage("[{0:HH:mm}] [{1}]: 酬勤{2}", e.Message.Time, e.Message.UserName, e.Message.Level);
         }
-
-        #endregion
 
         void ShowMessage(string format, params object[] args)
         {
@@ -146,17 +96,6 @@ namespace Douyu.Client
             txtMessage.AppendLineCrossThread(format, args);
         }
 
-        bool ValidateOperation(string message)
-        {
-            var password = "";
-            if (PasswordBox.ShowDialog(message, out password) == DialogResult.Cancel) {
-                return false;
-            }
-            if (password != "52664638") {
-                MessageBox.Show("密码错误", "密码", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            return true;
-        }
+        #endregion
     }
 }

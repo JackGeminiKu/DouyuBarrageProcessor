@@ -31,18 +31,6 @@ namespace Douyu.Client
             Application.ThreadException += Application_ThreadException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             SetFormLocation();
-            ShowAppVersion();
-        }
-
-        void SetFormLocation()
-        {
-            Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - Size.Width,
-                Screen.PrimaryScreen.WorkingArea.Height - Size.Height);
-        }
-
-        void ShowAppVersion()
-        {
-            this.Text += " v" + Assembly.GetExecutingAssembly().GetName().Version;
         }
 
         void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
@@ -56,9 +44,20 @@ namespace Douyu.Client
             LogService.Error(ex.Message, ex);
         }
 
+        void SetFormLocation()
+        {
+            Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - Size.Width,
+                Screen.PrimaryScreen.WorkingArea.Height - Size.Height);
+        }
+
+        //private const string ROOM_ID = "122402";
+        private const string ROOM_ID = "71017"; // 冯提莫
+
         private void FrmMain_Shown(object sender, EventArgs e)
         {
-            processorPanel.StartProcess(DouyuLiveAssistant.Properties.Settings.Default.SavedRoom);
+            Text += string.Format(" (房间号: {0})", ROOM_ID);
+            processorPanel.RoomId = ROOM_ID;
+            processorPanel.StartProcess();
         }
 
         private void FrmMain_FormClosed(object sender, FormClosedEventArgs e)

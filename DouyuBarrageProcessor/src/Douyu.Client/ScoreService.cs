@@ -8,9 +8,9 @@ using Jack4net.Log;
 
 namespace Douyu.Client
 {
-    public static class ScoreManager
+    public static class ScoreService
     {
-        public static double CalGiftScore(GiftMessage giftMessage)
+        public static double CalScore(GiftMessage giftMessage)
         {
             double experience = giftMessage.GiftExperience;
 
@@ -30,12 +30,12 @@ namespace Douyu.Client
             return experience;
         }
 
-        public static double CalChatScore(ChatMessage chatMessage)
+        public static double CalScore(ChatMessage chatMessage)
         {
             return 50;
         }
 
-        public static double CalChouqinScore(ChouqinMessage chouqinMessage)
+        public static double CalScore(ChouqinMessage chouqinMessage)
         {
             int score;
             switch (chouqinMessage.Level) {
