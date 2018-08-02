@@ -26,15 +26,15 @@ namespace Douyu.Client
             _barrageProcessor.ChouqinMessageProcessed += barrageProcessor_ChouqinMessageProcessed;
         }
 
-        protected override void OnHandleDestroyed(EventArgs e)
-        {
-            _barrageProcessor.ChatMessageProcessed -= barrageProcessor_ChatMessageProcessed;
-            _barrageProcessor.GiftMessageProcessed -= barrageProcessor_GiftMessageProcessed;
-            _barrageProcessor.ChouqinMessageProcessed -= barrageProcessor_ChouqinMessageProcessed;
-            base.OnHandleDestroyed(e);
-        }
+        //protected override void OnHandleDestroyed(EventArgs e)
+        //{
+        //    _barrageProcessor.ChatMessageProcessed -= barrageProcessor_ChatMessageProcessed;
+        //    _barrageProcessor.GiftMessageProcessed -= barrageProcessor_GiftMessageProcessed;
+        //    _barrageProcessor.ChouqinMessageProcessed -= barrageProcessor_ChouqinMessageProcessed;
+        //    base.OnHandleDestroyed(e);
+        //}
 
-        public string RoomId { get; set; }
+        public int RoomId { get; set; }
 
         public void StartProcess()
         {
@@ -65,7 +65,7 @@ namespace Douyu.Client
                 Obs.TopMovies.Update();
                 Obs.TopUsers.Update();
             } catch (Exception ex) {
-                LogService.Error("更新排名异常: " + ex.Message, ex);
+                LogService.Error("更新排名出现异常!", ex);
             } finally {
                 tmrUpdateRank.Start();
             }
@@ -73,19 +73,19 @@ namespace Douyu.Client
 
         #region 弹幕消息
 
-        void barrageProcessor_ChatMessageProcessed(object sender, ServerMessageEventArgs<ChatMessage> e)
+        void barrageProcessor_ChatMessageProcessed(object sender, ProcessMessageEventArgs<ChatMessage> e)
         {
             ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.Text);
         }
 
-        void barrageProcessor_GiftMessageProcessed(object sender, ServerMessageEventArgs<GiftMessage> e)
+        void barrageProcessor_GiftMessageProcessed(object sender, ProcessMessageEventArgs<GiftMessage> e)
         {
             ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.GiftName);
         }
 
-        void barrageProcessor_ChouqinMessageProcessed(object sender, ServerMessageEventArgs<ChouqinMessage> e)
+        void barrageProcessor_ChouqinMessageProcessed(object sender, ProcessMessageEventArgs<ChouqinMessage> e)
         {
-            ShowMessage("[{0:HH:mm}] [{1}]: 酬勤{2}", e.Message.Time, e.Message.UserName, e.Message.Level);
+            ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.ChouqinName);
         }
 
         void ShowMessage(string format, params object[] args)

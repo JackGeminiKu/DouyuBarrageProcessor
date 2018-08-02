@@ -19,28 +19,35 @@ namespace Douyu.Client
             _conn.Open();
         }
 
-        public static void AddScore(string roomId, string movieName, int movieScore)
+        public static void AddScore(int roomId, string movieName, int movieScore)
         {
             _conn.Execute(
-                "update MovieScore set MovieScore = MovieScore + @MovieScore where MovieName = @MovieName and RoomId = @RoomId",
-                new { MovieScore = movieScore, MovieName = movieName, RoomId = roomId }
+                "update MovieScore " +
+                "set MovieScore = MovieScore + @MovieScore " +
+                "where RoomId = @RoomId and MovieName = @MovieName",
+                new { MovieScore = movieScore, RoomId = roomId, MovieName = movieName }
             );
         }
 
-        public static bool HasMovie(string roomId, string movieName)
+        public static bool HasMovie(int roomId, string movieName)
         {
-            var count = _conn.ExecuteScalar(
-                "select count(*) from MovieScore where RoomId = @RoomId and MovieName = @MovieName",
+            var count = _conn.ExecuteScalar<int>(
+                "select count(*) " +
+                "from MovieScore " +
+                "where RoomId = @RoomId and MovieName = @MovieName",
                 new { RoomId = roomId, MovieName = movieName }
              );
 
-            return (int)count == 1;
+            return count == 1;
         }
 
-        public static void GetTopMovies(string roomId, int count, ref List<string> movieNames, ref List<int> movieScores)
+        public static void GetTopMovies(int roomId, int count, ref List<string> movieNames, ref List<int> movieScores)
         {
             var movies = _conn.Query(
-                "select top (@Count) MovieName, MovieScore from MovieScore where RoomId = @RoomId order by MovieScore desc",
+                "select top (@Count) MovieName, MovieScore " +
+                "from MovieScore " +
+                "where RoomId = @RoomId " +
+                "order by MovieScore desc",
                 new { Count = count, RoomId = roomId }
             );
             foreach (var movie in movies) {
@@ -49,10 +56,13 @@ namespace Douyu.Client
             }
         }
 
-        public static int GetMovieRank(string roomId, string movieName)
+        public static int GetMovieRank(int roomId, string movieName)
         {
             var movies = _conn.Query(
-                "select MovieName from MovieScore where RoomId = @RoomId order by MovieScore desc",
+                "select MovieName " +
+                "from MovieScore " +
+                "where RoomId = @RoomId " +
+                "order by MovieScore desc",
                 new { RoomId = roomId }
             );
             for (var i = 0; i < movies.Count(); i++) {
@@ -63,19 +73,21 @@ namespace Douyu.Client
             return -1;
         }
 
-        public static string GetCurrentMovie(string roomId)
+        public static string GetCurrentMovie(int roomId)
         {
-            var currentMovie = _conn.ExecuteScalar<string>(
-             "select Value from RoomInfo where Name = @Name and RoomId = @RoomId",
-                new { Name = "current movie", RoomId = roomId }
+            var currentMovie = _conn.ExecuteScalar<string>( // 没找到返回null
+             "select Value from RoomInfo " +
+             "where RoomId = @RoomId and Name = @Name",
+                new { RoomId = roomId, Name = "current movie" }
             );
             return currentMovie;
         }
 
-        public static string GetOfficialMovieName(string roomId, string aliasName)
+        public static string GetOfficialMovieName(int roomId, string aliasName)
         {
             var movieAlias = _conn.Query(
-                "select MovieName from MovieAlias where RoomId = @RoomId and MovieAlias = @AliasName",
+                "select MovieName from MovieAlias " +
+                "where RoomId = @RoomId and MovieAlias = @AliasName",
                 new { RoomId = roomId, AliasName = aliasName }
             );
 
@@ -84,6 +96,17 @@ namespace Douyu.Client
             }
 
             return movieAlias.First().MovieName;
+        }
+
+        public static DateTime GetLastPlayTime(int roomId, string movieName)
+        {
+            var lastPlayTime = _conn.ExecuteScalar<DateTime>(
+                "select LastPlayTime from MovieScore " +
+                "where RoomId = @RoomId and MovieName = @MovieName",
+                new { RoomId = roomId, MovieName = movieName }
+            );
+
+            return lastPlayTime;
         }
     }
 }

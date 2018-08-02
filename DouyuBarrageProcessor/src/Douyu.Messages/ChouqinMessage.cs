@@ -12,17 +12,16 @@ namespace Douyu.Messages
     public class ChouqinMessage : ServerMessage
     {
         public int Id { get; set; }
-        public DateTime Time { get; set; }
-        public string RoomId { get; set; }
-        public byte Level { get; set; }
-        public short Count { get; set; }
-        public short Hits { get; set; }
+        public int RoomId { get; set; }
         public int UserId { get; set; }
-        public string UserName { get; private set; }
-        public byte UserLevel { get; set; }
-        public string BadgeName { get; set; }
-        public byte BadgeLevel { get; set; }
+        public int UserLevel { get; set; }
+        public int Level { get; set; }
+        public int Count { get; set; }
+        public int Hits { get; set; }
+        public string UserName { get; private set; }    // TBD: 酬勤消息里面没有姓名?
         public int BadgeRoom { get; set; }
+        public string BadgeName { get; set; }
+        public int BadgeLevel { get; set; }
         public int ProcessResult { get; set; }
 
         public string ChouqinName

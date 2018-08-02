@@ -12,7 +12,7 @@ namespace Douyu.Client
     {
         public static double CalScore(GiftMessage giftMessage)
         {
-            double experience = giftMessage.GiftExperience;
+            var experience = giftMessage.GiftExperience;
 
             if (experience >= 20000) {
                 experience *= 333;
@@ -32,7 +32,7 @@ namespace Douyu.Client
 
         public static double CalScore(ChatMessage chatMessage)
         {
-            return 50;
+            return 100;
         }
 
         public static double CalScore(ChouqinMessage chouqinMessage)

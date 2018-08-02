@@ -20,49 +20,47 @@ namespace Douyu.Client
             _conn.Open();
         }
 
-        public static void AddScore(string roomId, int userId, string userName, double userScore)
+        public static void AddScore(int roomId, int userId, string userName, double userScore)
         {
             var scoreCount = _conn.ExecuteScalar<int>(
-                "select count(*) from UserScore where RoomId = @RoomId and UserId = @UserId",
+                "select count(*) from UserScore " +
+                "where RoomId = @RoomId and UserId = @UserId",
                 new { RoomId = roomId, UserId = userId }
             );
 
             if (scoreCount == 1) {    // 有积分记录
                 _conn.Execute(
-                 "update UserScore set UserScore = UserScore + @UserScore, UserName = @UserName " +
+                 "update UserScore " +
+                 "set UserScore = UserScore + @UserScore, UserName = @UserName " +
                  "where RoomId = @RoomId and UserId = @UserId",
                  new { UserScore = userScore, UserName = userName, RoomId = roomId, UserId = userId }
              );
             } else {    // 无积分记录
                 _conn.Execute(
-                 "insert into UserScore(RoomId, UserId, UserName, UserScore) " +
+                 "insert into " +
+                 "UserScore(RoomId, UserId, UserName, UserScore) " +
                  "values(@RoomId, @UserId, @UserName, @UserScore)",
                  new { RoomId = roomId, UserId = userId, UserName = userName, UserScore = userScore }
              );
             }
         }
 
-        public static int GetScore(string roomId, int userId)
+        public static int GetScore(int roomId, int userId)
         {
-            // 找不到这个人, 是新人, 返回0分
-            var count = _conn.ExecuteScalar(
-                "select count(*) from UserScore where RoomId = @RoomId and UserId = @UserId",
-                new { RoomId = roomId, UserId = userId }
-            );
-            if ((int)count == 0)
-                return 0;
-
-            var score = _conn.ExecuteScalar<int>(
-                "select UserScore from UserScore where RoomId = @RoomId and UserId = @UserId",
+            var score = _conn.ExecuteScalar<int>( // 找不到这个人, 是新人, 返回0分
+                "select UserScore from UserScore " +
+                "where RoomId = @RoomId and UserId = @UserId",
                 new { RoomId = roomId, UserId = userId }
             );
             return score;
         }
 
-        public static void GetTopUsers(string roomId, int count, ref List<string> names, ref List<int> scores)
+        public static void GetTopUsers(int roomId, int count, ref List<string> names, ref List<int> scores)
         {
             var users = _conn.Query(
-                "select top (@Count) UserName, UserScore from UserScore where RoomId = @RoomId order by UserScore desc",
+                "select top (@Count) UserName, UserScore from UserScore " +
+                "where RoomId = @RoomId " +
+                "order by UserScore desc",
                 new { Count = count, RoomId = roomId }
             );
             foreach (var user in users) {

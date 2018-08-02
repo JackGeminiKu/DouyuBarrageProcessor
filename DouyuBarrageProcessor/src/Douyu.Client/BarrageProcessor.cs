@@ -19,14 +19,15 @@ namespace Douyu.Client
 {
     public class BarrageProcessor
     {
-        public BarrageProcessor() { }
+        public BarrageProcessor()
+        { }
 
-        public BarrageProcessor(string roomId)
+        public BarrageProcessor(int roomId)
         {
             RoomId = roomId;
         }
 
-        public string RoomId { get; set; }
+        public int RoomId { get; set; }
 
         public bool IsProcessing { get; private set; }
 
@@ -60,7 +61,7 @@ namespace Douyu.Client
                         }
                     }
                 } catch (Exception ex) {
-                    LogService.Error("处理弹幕消息抛出异常: " + ex.Message, ex);
+                    LogService.Error("处理弹幕消息发生异常!", ex);
                 }
             }
             IsProcessing = false;
@@ -68,20 +69,16 @@ namespace Douyu.Client
 
         public void StopProcess()
         {
-            try {
-                const int STOP_TIMEOUT = 3000;
-                _stopProcess = true;
-                var stopwatch = Stopwatch.StartNew();
-                do {
-                    if (!IsProcessing)
-                        break;
-                } while (stopwatch.ElapsedMilliseconds < STOP_TIMEOUT);
-                if (IsProcessing)
-                    throw new DouyuException("停止处理消息超时!");
-            } catch (Exception ex) {
-                LogService.Error("停止处理弹幕消息抛出异常: " + ex.Message, ex);
-                throw new DouyuException("停止处理消息抛出异常: " + ex.Message, ex);
-            }
+            const int TIMEOUT_STOP_PROCESS = 3000;
+            _stopProcess = true;
+            var stopwatch = Stopwatch.StartNew();
+            do {
+                if (!IsProcessing)
+                    break;
+                MyThread.Wait(100);
+            } while (stopwatch.ElapsedMilliseconds < TIMEOUT_STOP_PROCESS);
+            if (IsProcessing)
+                throw new DouyuException("停止处理消息超时!");
         }
 
         #region 各种消息处理
@@ -94,7 +91,7 @@ namespace Douyu.Client
                 UserService.AddScore(chatMessage.RoomId, chatMessage.UserId, chatMessage.UserName, score);
 
                 // 处理弹幕命令
-                if (chatMessage.Text.Trim().StartsWith("#"))
+                if (IsChatCommand(chatMessage.Text))
                     ProcessChatCommand(chatMessage);
 
                 ChatMessage.SetProcessResult(chatMessage, ProcessResult.Ok);
@@ -105,78 +102,102 @@ namespace Douyu.Client
             }
         }
 
+        bool IsChatCommand(string chatText)
+        {
+            chatText = chatText.Trim();
+            return chatText.StartsWith("#") || chatText.StartsWith("＃");
+        }
+
         void ProcessChatCommand(ChatMessage message)
         {
+
             // 去除#, 空格, 替换全角字符
             var command = message.Text.Trim().Substring(1);
             command = command.Replace('－', '-');
             command = command.Replace('（', '(');
             command = command.Replace('）', ')');
 
-            // 命令: #打卡
+            // (0) 命令: #打卡
             if (command == "打卡") {
-                // Obs.OtherMessage.AddMessage("[{0}]: 无需打卡, 发弹幕得积分!", chatMessage.UserName);
+                Obs.OtherMessage.AddMessage("[{0}]: 无需打卡, 发弹幕也可以得积分!", message.UserName);
                 return;
             }
 
             // (1) 命令: 查询用户积分 #查询
             if (command == "查询") {
-                Obs.OtherMessage.AddMessage("[{0}]:\n当前积分 {1}",
-                    message.UserName, UserService.GetScore(message.RoomId, message.UserId));
+                var userScore = UserService.GetScore(message.RoomId, message.UserId);
+                Obs.OtherMessage.AddMessage("[{0}]: 当前积分 {1}", message.UserName, userScore);
                 return;
             }
 
             // (2) 命令: 点播电影 #功夫-100
             if (Regex.Match(command, @"^(\w+)$").Success) {
-                command += "-1000";
+                command += "-10000";
             }
             var match = Regex.Match(command, @"^(\w+)\s*-\s*(\d+)$");
             if (match.Success) {
-                // 检查系统里面是否有这部电影
-                var movieName = match.Groups[1].Value;
-                if (!MovieService.HasMovie(message.RoomId, movieName)) {
-                    var officialName = MovieService.GetOfficialMovieName(message.RoomId, movieName);   // 用的是别名?
-                    if (officialName == "" || !MovieService.HasMovie(message.RoomId, officialName)) {
-                        Obs.MovieMessage.ShowFail("[{0}]: 没有找到电影 {1}", message.UserName, movieName);
-                        return;
-                    }
-                    movieName = officialName;
-                }
-
-                // 检查点播电影是否是当前正在播放的电影
-                var currentMovie = MovieService.GetCurrentMovie(message.RoomId);
-                if (currentMovie != null && currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {
-                    Obs.MovieMessage.ShowFail("[{0}]: {1} 正在播放, 请不要重复点播", message.UserName, movieName);
-                    return;
-                }
-
-                // 检查积分是否溢出
-                var movieScore = 0;
-                if (!int.TryParse(match.Groups[2].Value, out movieScore)) {
-                    Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分无效", message.UserName, movieName);
-                    return;
-                }
-
-                // 检查用户积分是否够
-                var userScore = UserService.GetScore(message.RoomId, message.UserId);
-                if (userScore < movieScore) {
-                    Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分不够, 当前积分 {2}",
-                        message.UserName, movieName, userScore);
-                    return;
-                }
-
-                // 更新积分
-                MovieService.AddScore(message.RoomId, movieName, movieScore);
-                UserService.AddScore(message.RoomId, message.UserId, message.UserName, movieScore * (-1));
-
-                // 显示成功点播信息
-                var rank = MovieService.GetMovieRank(message.RoomId, movieName);
-                Obs.MovieMessage.PlayMovie(message.UserName, movieName, rank);
+                ProcessChatCommand_PlayMovie(match.Groups[1].Value, match.Groups[2].Value, message);
                 return;
             }
 
             // 未知命令
             Obs.OtherMessage.AddMessage("[{0}]: 无效命令, {1}", message.UserName, command);
+            return;
+        }
+
+        void ProcessChatCommand_PlayMovie(string movieName, string scoreInCommand, ChatMessage message)
+        {
+            const int COOLDOWN_PLAY_MOVIE = 4 * 60;
+
+            // 检查系统里面是否有这部电影
+            if (!MovieService.HasMovie(message.RoomId, movieName)) {
+                var officialName = MovieService.GetOfficialMovieName(message.RoomId, movieName);   // 用的是别名?
+                if (officialName == "" || !MovieService.HasMovie(message.RoomId, officialName)) {
+                    Obs.MovieMessage.ShowFail("[{0}]: 没有找到电影 {1}!", message.UserName, movieName);
+                    return;
+                }
+                movieName = officialName;
+            }
+
+            // 检查点播电影是否是当前正在播放的电影
+            var currentMovie = MovieService.GetCurrentMovie(message.RoomId);
+            if (currentMovie != null && currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {
+                Obs.MovieMessage.ShowFail("[{0}]: 正在播放 {1} , 请不要重复点播!", message.UserName, movieName);
+                return;
+            }
+
+            // 电影冷却完成了?
+            var lastPlayTime = MovieService.GetLastPlayTime(message.RoomId, movieName);
+            if ((DateTime.Now - lastPlayTime).TotalMinutes < COOLDOWN_PLAY_MOVIE) {
+                Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 还有 {2} 分钟才能点播!",
+                    message.UserName, movieName,
+                    COOLDOWN_PLAY_MOVIE - (DateTime.Now - lastPlayTime).TotalMinutes);
+                return;
+            }
+
+            // 检查积分是否溢出
+            var movieScore = 0;
+            if (!int.TryParse(scoreInCommand, out movieScore)) {
+                Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分无效!", message.UserName, movieName);
+                return;
+            }
+            movieScore = Math.Abs(movieScore);
+
+            // 用户积分够吗?
+            var userScore = UserService.GetScore(message.RoomId, message.UserId);
+            if (userScore < movieScore) {
+                Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分不够, 当前积分 {2}",
+                    message.UserName, movieName, userScore);
+                return;
+            }
+
+            // 更新积分
+            MovieService.AddScore(message.RoomId, movieName, movieScore);
+            UserService.AddScore(message.RoomId, message.UserId, message.UserName, movieScore * (-1));
+
+            // 显示成功点播信息
+            var rank = MovieService.GetMovieRank(message.RoomId, movieName);
+            Obs.MovieMessage.PlayMovie(message.UserName, movieName, rank);
             return;
         }
 
@@ -188,8 +209,9 @@ namespace Douyu.Client
                 UserService.AddScore(message.RoomId, message.UserId, message.UserName, giftScore);
 
                 // 感谢            
+                var userScore = UserService.GetScore(message.RoomId, message.UserId);
                 Obs.ThanksMessage.AddMessage("感谢 {0} 送的 {1}, 总积分 {2}",
-                    message.UserName, message.GiftName, UserService.GetScore(message.RoomId, message.UserId));
+                    message.UserName, message.GiftName, userScore);
 
                 GiftMessage.SetProcessResult(message, ProcessResult.Ok);
                 OnGiftMessageProcessed(message);
@@ -203,12 +225,13 @@ namespace Douyu.Client
         {
             try {
                 // 酬勤赚积分
-                var score = ScoreService.CalScore(message);
-                UserService.AddScore(message.RoomId, message.UserId, message.UserName, score);
+                var chouqinScore = ScoreService.CalScore(message);
+                UserService.AddScore(message.RoomId, message.UserId, message.UserName, chouqinScore);
 
                 // 感谢
+                var userScore = UserService.GetScore(message.RoomId, message.UserId);
                 Obs.ThanksMessage.AddMessage("感谢 {0} 送的 {1}, 总积分 {2}",
-                    message.UserName, message.ChouqinName, UserService.GetScore(message.RoomId, message.UserId));
+                    message.UserName, message.ChouqinName, userScore);
 
                 ChouqinMessage.SetProcessResult(message, ProcessResult.Ok); ;
                 OnChouqinMessageProcessed(message);
@@ -222,26 +245,26 @@ namespace Douyu.Client
 
         #region events
 
-        public event EventHandler<ServerMessageEventArgs<ChatMessage>> ChatMessageProcessed;
-        public event EventHandler<ServerMessageEventArgs<GiftMessage>> GiftMessageProcessed;
-        public event EventHandler<ServerMessageEventArgs<ChouqinMessage>> ChouqinMessageProcessed;
+        public event EventHandler<ProcessMessageEventArgs<ChatMessage>> ChatMessageProcessed;
+        public event EventHandler<ProcessMessageEventArgs<GiftMessage>> GiftMessageProcessed;
+        public event EventHandler<ProcessMessageEventArgs<ChouqinMessage>> ChouqinMessageProcessed;
 
         protected void OnChatMessageProcessed(ChatMessage message)
         {
             if (ChatMessageProcessed != null)
-                ChatMessageProcessed(this, new ServerMessageEventArgs<ChatMessage>(message));
+                ChatMessageProcessed(this, new ProcessMessageEventArgs<ChatMessage>(message));
         }
 
         protected void OnGiftMessageProcessed(GiftMessage message)
         {
             if (GiftMessageProcessed != null)
-                GiftMessageProcessed(this, new ServerMessageEventArgs<GiftMessage>(message));
+                GiftMessageProcessed(this, new ProcessMessageEventArgs<GiftMessage>(message));
         }
 
         protected void OnChouqinMessageProcessed(ChouqinMessage message)
         {
             if (ChouqinMessageProcessed != null)
-                ChouqinMessageProcessed(this, new ServerMessageEventArgs<ChouqinMessage>(message));
+                ChouqinMessageProcessed(this, new ProcessMessageEventArgs<ChouqinMessage>(message));
         }
 
         #endregion

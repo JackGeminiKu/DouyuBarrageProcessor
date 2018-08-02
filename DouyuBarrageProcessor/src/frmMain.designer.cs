@@ -39,7 +39,7 @@
             this.processorPanel.Location = new System.Drawing.Point(0, 0);
             this.processorPanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.processorPanel.Name = "processorPanel";
-            this.processorPanel.RoomId = null;
+            this.processorPanel.RoomId = 742805;
             this.processorPanel.Size = new System.Drawing.Size(484, 271);
             this.processorPanel.TabIndex = 0;
             // 

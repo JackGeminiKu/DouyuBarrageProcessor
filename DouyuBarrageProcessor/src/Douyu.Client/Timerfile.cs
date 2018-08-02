@@ -14,31 +14,30 @@ namespace Douyu.Client
         System.Timers.Timer _tmrDeleter;
         Mutex _mutex;
 
-        public TimerFile(string path, int maxTime)
+        public TimerFile(string filePath, int maxTime)
         {
-            Path = path;
-            _mutex = new Mutex(false, System.IO.Path.GetFileName(Path));
-            _tmrDeleter = new System.Timers.Timer();
-            _tmrDeleter.Interval = maxTime * 1000;
+            FilePath = filePath;
+            _mutex = new Mutex(false, filePath.Replace('\\','-'));
+            _tmrDeleter = new System.Timers.Timer(maxTime * 1000);
             _tmrDeleter.Elapsed += new ElapsedEventHandler(_timer_Elapsed);
         }
 
-        public string Path { get; private set; }
+        public string FilePath { get; private set; }
 
         void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             try {
                 _mutex.WaitOne();
 
-                if (!File.Exists(Path))
+                if (!File.Exists(FilePath))
                     return;
 
-                FileInfo fileInfo = new FileInfo(Path);
+                var fileInfo = new FileInfo(FilePath);
                 if (fileInfo.Length == 0)
                     return;
 
-                // 删除所有内容
-                File.WriteAllText(Path, "");
+                // 清空
+                File.WriteAllText(FilePath, "");
             } finally {
                 _mutex.ReleaseMutex();
             }
@@ -49,10 +48,10 @@ namespace Douyu.Client
             try {
                 _mutex.WaitOne();
                 _tmrDeleter.Stop();
-                File.WriteAllText(Path, contents);
+                File.WriteAllText(FilePath, contents);
                 _tmrDeleter.Start();
             } catch (Exception ex) {
-                LogService.Error("WriteLine() Exception: " + ex.Message, ex);
+                LogService.Error("WriteLine Exception!", ex);
             } finally {
                 _mutex.ReleaseMutex();
             }

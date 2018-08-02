@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Douyu.Events
 {
-    public class ServerMessageEventArgs<M> : EventArgs where M : ServerMessage
+    public class ProcessMessageEventArgs<M> : EventArgs where M : ServerMessage
     {
-        public ServerMessageEventArgs(M message)
+        public ProcessMessageEventArgs(M message)
         {
             Message = message;
         }
