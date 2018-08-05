@@ -20,6 +20,7 @@ namespace Douyu.Client
             _mutex = new Mutex(false, filePath.Replace('\\','-'));
             _tmrDeleter = new System.Timers.Timer(maxTime * 1000);
             _tmrDeleter.Elapsed += new ElapsedEventHandler(_timer_Elapsed);
+            _tmrDeleter.Start();
         }
 
         public string FilePath { get; private set; }

@@ -50,8 +50,9 @@ namespace Douyu.Client
                 Screen.PrimaryScreen.WorkingArea.Height - Size.Height);
         }
 
-        private const int ROOM_ID = 122402;
         //private const int ROOM_ID = "71017"; // 冯提莫
+        //private const int ROOM_ID = 742805;
+        private const int ROOM_ID = 122402;
 
         private void FrmMain_Shown(object sender, EventArgs e)
         {

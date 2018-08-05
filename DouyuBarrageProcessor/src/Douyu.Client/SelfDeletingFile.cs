@@ -6,6 +6,7 @@ using System.Timers;
 using System.IO;
 using System.Threading;
 using Jack4net.Log;
+using System.Diagnostics;
 
 namespace Douyu.Client
 {
@@ -21,6 +22,7 @@ namespace Douyu.Client
             _mutex = new Mutex(false, FilePath.Replace('\\', '-'));
             _tmrDeleter = new System.Timers.Timer(maxTime * 1000);
             _tmrDeleter.Elapsed += _timer_Elapsed;
+            _tmrDeleter.Start();
         }
 
         void _timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -57,7 +59,7 @@ namespace Douyu.Client
         {
             try {
                 _mutex.WaitOne();
-                WriteLine(FilePath, messsage);
+                WriteLine(FilePath, messsage.Trim());
             } catch (Exception ex) {
                 LogService.Error("WriteLine Exception!", ex);
             } finally {
@@ -69,7 +71,7 @@ namespace Douyu.Client
         {
             // 还没有message文件?
             if (!File.Exists(filePath)) {
-                File.AppendAllText(filePath, message);
+                File.AppendAllText(filePath, message + "\n");
                 return;
             }
 
@@ -78,16 +80,17 @@ namespace Douyu.Client
 
             // 还没达到最大行数限制
             if (lines.Length < MaxLines) {
-                File.AppendAllText(filePath, "\r\n" + message);
+                File.AppendAllText(filePath, message + "\n");
                 return;
             }
 
             // 已经达到最大行数限制
             var contents = "";
             for (var i = 1; i < MaxLines; ++i) {
-                contents += lines[i] + "\r\n";
+                contents += lines[i] + "\n";
             }
-            contents += message;
+            contents += message + "\n";
+
             File.WriteAllText(filePath, contents);
         }
     }

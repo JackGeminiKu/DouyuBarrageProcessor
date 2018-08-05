@@ -82,6 +82,7 @@ namespace Douyu.Client
     {
         readonly string TopUsersFile = Obs.ObsDir + "TopUsers.txt";
         const int USER_COUNT = 10;
+        const int WAN = 10000;
 
         public TopUsers(int roomId)
         {
@@ -99,7 +100,8 @@ namespace Douyu.Client
             var topUsers = "";
             for (var i = 0; i < names.Count; i++) {
                 topUsers += (topUsers == "" ? "" : "\n")
-                    + string.Format("[{0:D2}] {1} {2}", i + 1, names[i], scores[i]);
+                    + string.Format("[{0:D2}] {1} {2}", i + 1, names[i],
+                    scores[i] <= WAN ? scores[i].ToString() : (scores[i] / WAN).ToString() + "W+");
             }
 
             if (_topUsers != topUsers) {
