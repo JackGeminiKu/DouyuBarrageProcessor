@@ -159,6 +159,12 @@ namespace Douyu.Client
                 movieName = officialName;
             }
 
+            // 检查是否是禁播的电影
+            if (MovieService.IsBannedMovie(movieName)) {
+                Obs.MovieMessage.ShowFail("[{0}]: {1} 已经禁播!", message.UserName, movieName);
+                return;
+            }
+
             // 检查点播电影是否是当前正在播放的电影
             var currentMovie = MovieService.GetCurrentMovie(message.RoomId);
             if (currentMovie != null && currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {

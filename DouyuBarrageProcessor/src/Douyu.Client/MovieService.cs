@@ -46,7 +46,7 @@ namespace Douyu.Client
             var movies = _conn.Query(
                 "select top (@Count) MovieName, MovieScore " +
                 "from MovieScore " +
-                "where RoomId = @RoomId " +
+                "where RoomId = @RoomId and MovieName not in (select MovieName from MovieBlacklist)" +
                 "order by MovieScore desc",
                 new { Count = count, RoomId = roomId }
             );
@@ -54,6 +54,14 @@ namespace Douyu.Client
                 movieNames.Add(movie.MovieName);
                 movieScores.Add(movie.MovieScore);
             }
+        }
+
+        public static bool IsBannedMovie(string movieName)
+        {
+            var count = _conn.ExecuteScalar<int>("select count(*) from MovieBlacklist where MovieName = @MovieName",
+                new { MovieName = movieName }
+            );
+            return count >= 1;
         }
 
         public static int GetMovieRank(int roomId, string movieName)
