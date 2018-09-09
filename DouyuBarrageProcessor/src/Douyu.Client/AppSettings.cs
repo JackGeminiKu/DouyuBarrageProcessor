@@ -21,5 +21,8 @@ namespace Douyu.Client
                     new { Name = "MovieCooldown" });
             }
         }
+
+
+        public static int RoomId { get { return 122402; } }
     }
 }
