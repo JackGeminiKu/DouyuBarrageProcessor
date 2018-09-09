@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Douyu.Client\AppSettings.cs" />
     <Compile Include="src\Douyu.Client\MovieService.cs" />
     <Compile Include="src\Douyu.Client\SelfDeletingFile.cs" />
     <Compile Include="src\Douyu.Client\TimerFile.cs" />

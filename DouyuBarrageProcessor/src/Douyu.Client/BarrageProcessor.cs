@@ -110,7 +110,6 @@ namespace Douyu.Client
 
         void ProcessChatCommand(ChatMessage message)
         {
-
             // 去除#, 空格, 替换全角字符
             var command = message.Text.Trim().Substring(1);
             command = command.Replace('－', '-');
@@ -147,8 +146,6 @@ namespace Douyu.Client
 
         void ProcessChatCommand_PlayMovie(string movieName, string scoreInCommand, ChatMessage message)
         {
-            const int COOLDOWN_PLAY_MOVIE = 4 * 60;
-
             // 检查系统里面是否有这部电影
             if (!MovieService.HasMovie(message.RoomId, movieName)) {
                 var officialName = MovieService.GetOfficialMovieName(message.RoomId, movieName);   // 用的是别名?
@@ -160,7 +157,7 @@ namespace Douyu.Client
             }
 
             // 检查是否是禁播的电影
-            if (MovieService.IsBannedMovie(movieName)) {
+            if (MovieService.IsMovieOnBlacklist(message.RoomId, movieName)) {
                 Obs.MovieMessage.ShowFail("[{0}]: {1} 已经禁播!", message.UserName, movieName);
                 return;
             }
@@ -173,11 +170,12 @@ namespace Douyu.Client
             }
 
             // 电影冷却完成了?
+            var movieCooldown = AppSettings.MovieCooldown;
             var lastPlayTime = MovieService.GetLastPlayTime(message.RoomId, movieName);
-            if ((DateTime.Now - lastPlayTime).TotalMinutes < COOLDOWN_PLAY_MOVIE) {
+            if ((DateTime.Now - lastPlayTime).TotalMinutes < movieCooldown) {
                 Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 还有 {2} 分钟才能点播!",
                     message.UserName, movieName,
-                    COOLDOWN_PLAY_MOVIE - (DateTime.Now - lastPlayTime).TotalMinutes);
+                    movieCooldown - (DateTime.Now - lastPlayTime).TotalMinutes);
                 return;
             }
 
