@@ -139,6 +139,13 @@ namespace Douyu.Client
                 ProcessChatCommand_PlayMovie(match.Groups[1].Value, match.Groups[2].Value, message);
                 return;
             }
+            // (2) 命令: 点播电影 #功夫(粤语)-100
+            match = Regex.Match(command, @"^(\w+)\s*\((\w+)\)\s*-\s*(\d+)$");
+            if (match.Success) {
+                var movieName = string.Format("{0}({1})", match.Groups[1].Value, match.Groups[2].Value);
+                ProcessChatCommand_PlayMovie(movieName, match.Groups[3].Value, message);
+                return;
+            }
 
             // 未知命令
             Obs.OtherMessage.AddMessage("[{0}]: 无效命令, {1}", message.UserName, command);
