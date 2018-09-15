@@ -8,13 +8,14 @@ using System.Text;
 using System.Windows.Forms;
 using Douyu.Events;
 using Douyu.Messages;
-using Jack4net.Log;
+using My.Log;
 
 namespace Douyu.Client
 {
     public partial class ProcessorPanel : UserControl
     {
         BarrageProcessor _barrageProcessor;
+        System.Timers.Timer _tmrUpdateRank;
 
         public ProcessorPanel()
         {
@@ -24,21 +25,28 @@ namespace Douyu.Client
             _barrageProcessor.ChatMessageProcessed += barrageProcessor_ChatMessageProcessed;
             _barrageProcessor.GiftMessageProcessed += barrageProcessor_GiftMessageProcessed;
             _barrageProcessor.ChouqinMessageProcessed += barrageProcessor_ChouqinMessageProcessed;
+            _tmrUpdateRank = new System.Timers.Timer(1000);
+            _tmrUpdateRank.Elapsed += new System.Timers.ElapsedEventHandler(_tmrUpdateRank_Elapsed);
         }
 
-        //protected override void OnHandleDestroyed(EventArgs e)
-        //{
-        //    _barrageProcessor.ChatMessageProcessed -= barrageProcessor_ChatMessageProcessed;
-        //    _barrageProcessor.GiftMessageProcessed -= barrageProcessor_GiftMessageProcessed;
-        //    _barrageProcessor.ChouqinMessageProcessed -= barrageProcessor_ChouqinMessageProcessed;
-        //    base.OnHandleDestroyed(e);
-        //}
+        void _tmrUpdateRank_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            try {
+                _tmrUpdateRank.Stop();
+                Obs.TopMovies.Update();
+                Obs.TopUsers.Update();
+            } catch (Exception ex) {
+                LogService.Error("更新排名出现异常!", ex);
+            } finally {
+                _tmrUpdateRank.Start();
+            };
+        }
 
         public int RoomId { get; set; }
 
         public void StartProcess()
         {
-            tmrUpdateRank.Start();
+            _tmrUpdateRank.Start();
             if (bwDouyu.IsBusy) {
                 MessageBox.Show("正在处理弹幕中, 请不要重复启动!", "开始处理弹幕");
                 return;
@@ -54,21 +62,8 @@ namespace Douyu.Client
 
         public void StopProcess()
         {
-            tmrUpdateRank.Stop();
+            _tmrUpdateRank.Stop();
             _barrageProcessor.StopProcess();
-        }
-
-        private void tmrUpdateRank_Tick(object sender, EventArgs e)
-        {
-            try {
-                tmrUpdateRank.Stop();
-                Obs.TopMovies.Update();
-                Obs.TopUsers.Update();
-            } catch (Exception ex) {
-                LogService.Error("更新排名出现异常!", ex);
-            } finally {
-                tmrUpdateRank.Start();
-            }
         }
 
         #region 弹幕消息

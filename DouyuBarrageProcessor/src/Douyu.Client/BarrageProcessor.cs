@@ -9,11 +9,12 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Douyu.Messages;
 using Douyu.Events;
-using Jack4net.Log;
-using Jack4net;
+using My.Log;
+using My;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using My.Windows.Forms;
 
 namespace Douyu.Client
 {
@@ -46,7 +47,7 @@ namespace Douyu.Client
                     // 获取消息
                     var messages = ChatMessage.GetMessages(RoomId);
                     if (messages.Length == 0) {
-                        MyThread.Wait(100);
+                        MyApplication.Delay(100);
                         continue;
                     }
 
@@ -75,7 +76,7 @@ namespace Douyu.Client
             do {
                 if (!IsProcessing)
                     break;
-                MyThread.Wait(100);
+                MyApplication.Delay(100);
             } while (stopwatch.ElapsedMilliseconds < TIMEOUT_STOP_PROCESS);
             if (IsProcessing)
                 throw new DouyuException("停止处理消息超时!");

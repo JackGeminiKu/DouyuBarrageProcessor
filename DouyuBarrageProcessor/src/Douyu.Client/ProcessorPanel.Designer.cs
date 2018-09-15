@@ -27,10 +27,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.txtMessage = new System.Windows.Forms.TextBox();
             this.bwDouyu = new System.ComponentModel.BackgroundWorker();
-            this.tmrUpdateRank = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // txtMessage
@@ -51,11 +49,6 @@
             // 
             this.bwDouyu.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwDouyu_DoWork);
             // 
-            // tmrUpdateRank
-            // 
-            this.tmrUpdateRank.Interval = 1000;
-            this.tmrUpdateRank.Tick += new System.EventHandler(this.tmrUpdateRank_Tick);
-            // 
             // ProcessorPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -71,7 +64,6 @@
         #endregion
 
         private System.ComponentModel.BackgroundWorker bwDouyu;
-        private System.Windows.Forms.Timer tmrUpdateRank;
         private System.Windows.Forms.TextBox txtMessage;
     }
 }

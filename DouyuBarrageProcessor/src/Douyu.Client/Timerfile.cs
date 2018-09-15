@@ -5,7 +5,7 @@ using System.Text;
 using System.Timers;
 using System.IO;
 using System.Threading;
-using Jack4net.Log;
+using My.Log;
 
 namespace Douyu.Client
 {

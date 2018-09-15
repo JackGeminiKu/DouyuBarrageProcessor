@@ -10,12 +10,13 @@ using System.Threading;
 using System.IO;
 using System.Reflection;
 using Douyu.Messages;
-using Jack4net;
+using My;
 using Douyu.Events;
-using Jack4net.Log;
+using My.Log;
 using System.Configuration;
 using System.Diagnostics;
 using DouyuLiveAssistant.Properties;
+using My.Windows.Forms;
 
 namespace Douyu.Client
 {
@@ -47,12 +48,13 @@ namespace Douyu.Client
         void SetFormLocation()
         {
             Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - Size.Width,
-                Screen.PrimaryScreen.WorkingArea.Height - Size.Height);
+                Screen.PrimaryScreen.WorkingArea.Height/2 - Size.Height/2);
         }
 
         private void FrmMain_Shown(object sender, EventArgs e)
         {
             Text += string.Format(" (房间号: {0})", AppSettings.RoomId);
+            Text += " v" + MyApplication.Version;
             processorPanel.RoomId = AppSettings.RoomId;
             processorPanel.StartProcess();
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Douyu.Messages;
 using System.Threading;
-using Jack4net.Log;
+using My.Log;
 
 namespace Douyu.Client
 {

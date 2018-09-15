@@ -6,7 +6,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.Diagnostics;
 using DouyuLiveAssistant.Properties;
-using Jack4net.Log;
+using My.Log;
+using My.Windows.Forms;
 
 namespace Douyu.Client
 {
@@ -37,7 +38,7 @@ namespace Douyu.Client
 
         public static string ObsDir
         {
-            get { return JApplication.RootPath + @"OBS\"; }
+            get { return MyApplication.RootPath + @"OBS\"; }
         }
     }
 

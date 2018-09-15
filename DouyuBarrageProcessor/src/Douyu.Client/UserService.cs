@@ -6,7 +6,7 @@ using Dapper;
 using System.Data;
 using System.Data.SqlClient;
 using DouyuLiveAssistant.Properties;
-using Jack4net.Log;
+using My.Log;
 
 namespace Douyu.Client
 {
