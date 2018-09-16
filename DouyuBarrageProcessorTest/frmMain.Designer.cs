@@ -34,6 +34,7 @@
             this.txtChatData = new System.Windows.Forms.TextBox();
             this.btnTestGiftData = new System.Windows.Forms.Button();
             this.txtGiftData = new System.Windows.Forms.TextBox();
+            this.btnTestMessageFile = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnScoreTest
@@ -99,11 +100,22 @@
             this.txtGiftData.Size = new System.Drawing.Size(188, 105);
             this.txtGiftData.TabIndex = 6;
             // 
+            // btnTestMessageFile
+            // 
+            this.btnTestMessageFile.Location = new System.Drawing.Point(530, 238);
+            this.btnTestMessageFile.Name = "btnTestMessageFile";
+            this.btnTestMessageFile.Size = new System.Drawing.Size(194, 42);
+            this.btnTestMessageFile.TabIndex = 7;
+            this.btnTestMessageFile.Text = "测试Message File";
+            this.btnTestMessageFile.UseVisualStyleBackColor = true;
+            this.btnTestMessageFile.Click += new System.EventHandler(this.btnTestTimerFile_Click);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(984, 580);
+            this.Controls.Add(this.btnTestMessageFile);
             this.Controls.Add(this.txtGiftData);
             this.Controls.Add(this.btnTestGiftData);
             this.Controls.Add(this.txtChatData);
@@ -127,6 +139,7 @@
         private System.Windows.Forms.TextBox txtChatData;
         private System.Windows.Forms.Button btnTestGiftData;
         private System.Windows.Forms.TextBox txtGiftData;
+        private System.Windows.Forms.Button btnTestMessageFile;
     }
 }
 

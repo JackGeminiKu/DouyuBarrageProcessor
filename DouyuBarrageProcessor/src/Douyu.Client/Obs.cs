@@ -24,7 +24,7 @@ namespace Douyu.Client
             TopUsers = new TopUsers(roomId);
             TopUsers.Update();
 
-            MovieMessage = new MovieMessage();
+            MovieMessage = new PlayMessage();
             ThanksMessage = new ThanksMessage();
             OtherMessage = new OtherMessage();
         }
@@ -32,7 +32,7 @@ namespace Douyu.Client
         public static TopMovies TopMovies { get; private set; }
         public static TopUsers TopUsers { get; private set; }
 
-        public static MovieMessage MovieMessage { get; private set; }
+        public static PlayMessage MovieMessage { get; private set; }
         public static ThanksMessage ThanksMessage { get; private set; }
         public static OtherMessage OtherMessage { get; private set; }
 
@@ -88,65 +88,68 @@ namespace Douyu.Client
         public TopUsers(int roomId)
         {
             RoomId = roomId;
+            WriteFile("");
         }
 
         public int RoomId { get; private set; }
 
         public void Update()
         {
+            var topUsers = GetTopUsers();
+            if (_fileContent != topUsers) {
+                WriteFile(topUsers);
+            }
+        }
+
+        string GetTopUsers()
+        {
             var names = new List<string>();
             var scores = new List<int>();
             UserService.GetTopUsers(RoomId, USER_COUNT, ref names, ref scores);
-
             var topUsers = "";
             for (var i = 0; i < names.Count; i++) {
                 topUsers += (topUsers == "" ? "" : "\n")
                     + string.Format("[{0:D2}] {1} {2}", i + 1, names[i],
                     scores[i] <= WAN ? scores[i].ToString() : (scores[i] / WAN).ToString() + "W+");
             }
-
-            if (_topUsers != topUsers) {
-                File.WriteAllText(TopUsersFile, topUsers);
-                _topUsers = topUsers;
-            }
+            return topUsers;
         }
 
-        string _topUsers = "";
+        public void Clear()
+        {
+            if (_fileContent != "") WriteFile("");
+        }
+
+        void WriteFile(string message)
+        {
+            File.WriteAllText(TopUsersFile, message);
+            _fileContent = message;
+        }
+
+        string _fileContent = "";
     }
 
 
 
-    public class MovieMessage
+    public class PlayMessage
     {
         const int MAX_TIME = 10;
-        readonly string UserNameFile = Obs.ObsDir + "PlayMovie_UserName.txt";
-        readonly string MovieNameFile = Obs.ObsDir + "PlayMovie_MovieName.txt";
-        readonly string PlayFailFile = Obs.ObsDir + "PlayMovie_PlayFail.txt";
-        TimerFile _userNameFile;
-        TimerFile _movieNameFile;
-        TimerFile _playFailFile;
+        readonly string PlayMessageFile = Obs.ObsDir + "PlayMessage.txt";
+        SelfDeletingFile _playMessageFile;
 
-        public MovieMessage()
+        public PlayMessage()
         {
-            _userNameFile = new TimerFile(UserNameFile, MAX_TIME);
-            _movieNameFile = new TimerFile(MovieNameFile, MAX_TIME);
-            _playFailFile = new TimerFile(PlayFailFile, MAX_TIME);
+            _playMessageFile = new SelfDeletingFile(PlayMessageFile, 10, MAX_TIME);
         }
 
-        public void PlayMovie(string userName, string movieName, int rank)
+        public void AddMessage(string message)
         {
-            _userNameFile.WriteLine(userName);
-            _movieNameFile.WriteLine("成功投票 " + movieName);
+            _playMessageFile.WriteLine(message);
         }
 
-        public void ShowFail(string message)
+        public void AddMessage(string format, params object[] args)
         {
-            _playFailFile.WriteLine(message);
-        }
-
-        public void ShowFail(string format, params object[] args)
-        {
-            ShowFail(string.Format(format, args));
+            AddMessage(string.Format(format, args));
         }
     }
 

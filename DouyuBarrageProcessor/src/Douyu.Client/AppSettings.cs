@@ -22,6 +22,15 @@ namespace Douyu.Client
             }
         }
 
+        public static bool ShowTopUsers
+        {
+            get
+            {
+                return _conn.ExecuteScalar<bool>("select Value from AppSetting where Name = @Name",
+                    new { Name = "ShowTopUsers" });
+            }
+        }
+
         public static int RoomId { get { return 742805; } }
     }
 }

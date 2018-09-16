@@ -12,38 +12,52 @@ namespace Douyu.Client
 {
     public class SelfDeletingFile
     {
-        System.Timers.Timer _tmrDeleter;
+        System.Timers.Timer _trmFileUpdater;
         Mutex _mutex;
 
-        public SelfDeletingFile(string filePath, int maxLines, int maxTime)
+        public SelfDeletingFile(string filePath, int maxLines, int maxLiveTime)
         {
             FilePath = filePath;
+            File.WriteAllText(FilePath, "");    //清空内容
             MaxLines = maxLines;
+            MaxLiveTime = maxLiveTime;
             _mutex = new Mutex(false, FilePath.Replace('\\', '-'));
-            _tmrDeleter = new System.Timers.Timer(maxTime * 1000);
-            _tmrDeleter.Elapsed += _timer_Elapsed;
-            _tmrDeleter.Start();
+            _trmFileUpdater = new System.Timers.Timer(100);
+            _trmFileUpdater.Elapsed += _tmrFileUpdater_Elapsed;
+            _trmFileUpdater.Start();
         }
 
-        void _timer_Elapsed(object sender, ElapsedEventArgs e)
+        public string FilePath { get; private set; }
+        public int MaxLines { get; set; }
+        public int MaxLiveTime { get; set; }
+
+        bool _messageChanged = false;
+
+        void _tmrFileUpdater_Elapsed(object sender, ElapsedEventArgs e)
         {
             try {
                 _mutex.WaitOne();
 
-                if (!File.Exists(FilePath))
-                    return;
-
-                var fileInfo = new FileInfo(FilePath);
-                if (fileInfo.Length == 0)
-                    return;
-
-                // 删除第一行
-                var lines = File.ReadAllLines(FilePath);
-                var contents = "";
-                for (var i = 1; i < lines.Length; ++i) {
-                    contents += lines[i] + "\n";
+                while (_messages.Count > MaxLines) {
+                    _messages.RemoveAt(0);
+                    _messageChanged = true;
                 }
-                File.WriteAllText(FilePath, contents);
+                for (var i = _messages.Count - 1; i >= 0; --i) {
+                    if ((DateTime.Now - _messages[i].Time).TotalSeconds > MaxLiveTime) {
+                        _messages.RemoveAt(i);
+                        _messageChanged = true;
+                    }
+                }
+
+                if (!_messageChanged) return;
+
+                var messages = "";
+                foreach (var item in _messages) {
+                    messages += item.Message + "\n";
+                }
+
+                File.WriteAllText(FilePath, messages);
+                _messageChanged = false;
             } catch (Exception ex) {
                 LogService.Error("Auto Delete Exception!", ex);
             } finally {
@@ -51,47 +65,29 @@ namespace Douyu.Client
             }
         }
 
-        public string FilePath { get; private set; }
 
-        public int MaxLines { get; set; }
+        List<MessageItem> _messages = new List<MessageItem>();
 
         public void WriteLine(string messsage)
         {
-            try {
-                _mutex.WaitOne();
-                WriteLine(FilePath, messsage.Trim());
-            } catch (Exception ex) {
-                LogService.Error("WriteLine Exception!", ex);
-            } finally {
-                _mutex.ReleaseMutex();
-            }
+            _mutex.WaitOne();
+            _messages.Add(new MessageItem(DateTime.Now, messsage.Trim()));
+            _messageChanged = true;
+            _mutex.ReleaseMutex();
         }
+    }
 
-        void WriteLine(string filePath, string message)
+
+
+    public class MessageItem
+    {
+        public MessageItem(DateTime time, string message)
         {
-            // 还没有message文件?
-            if (!File.Exists(filePath)) {
-                File.AppendAllText(filePath, message + "\n");
-                return;
-            }
-
-            // 读取原有内容
-            var lines = File.ReadAllLines(filePath);
-
-            // 还没达到最大行数限制
-            if (lines.Length < MaxLines) {
-                File.AppendAllText(filePath, message + "\n");
-                return;
-            }
-
-            // 已经达到最大行数限制
-            var contents = "";
-            for (var i = 1; i < MaxLines; ++i) {
-                contents += lines[i] + "\n";
-            }
-            contents += message + "\n";
-
-            File.WriteAllText(filePath, contents);
+            Time = time;
+            Message = message;
         }
+
+        public DateTime Time { get; private set; }
+        public string Message { get; private set; }
     }
 }

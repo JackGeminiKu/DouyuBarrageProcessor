@@ -158,7 +158,7 @@ namespace Douyu.Client
             if (!MovieService.HasMovie(message.RoomId, movieName)) {
                 var officialName = MovieService.GetOfficialMovieName(message.RoomId, movieName);   // 用的是别名?
                 if (officialName == "" || !MovieService.HasMovie(message.RoomId, officialName)) {
-                    Obs.MovieMessage.ShowFail("[{0}]: 没有找到电影 {1}!", message.UserName, movieName);
+                    Obs.MovieMessage.AddMessage("{0} : 没有找到电影【{1}】!", message.UserName, movieName);
                     return;
                 }
                 movieName = officialName;
@@ -166,14 +166,14 @@ namespace Douyu.Client
 
             // 检查是否是禁播的电影
             if (MovieService.IsMovieOnBlacklist(message.RoomId, movieName)) {
-                Obs.MovieMessage.ShowFail("[{0}]: {1} 已经禁播!", message.UserName, movieName);
+                Obs.MovieMessage.AddMessage("{0} : 【{1}】已经禁播!", message.UserName, movieName);
                 return;
             }
 
             // 检查点播电影是否是当前正在播放的电影
             var currentMovie = MovieService.GetCurrentMovie(message.RoomId);
             if (currentMovie != null && currentMovie.Equals(movieName, StringComparison.OrdinalIgnoreCase)) {
-                Obs.MovieMessage.ShowFail("[{0}]: 正在播放 {1} , 请不要重复点播!", message.UserName, movieName);
+                Obs.MovieMessage.AddMessage("{0} : 正在播放【{1}】, 请不要重复点播!", message.UserName, movieName);
                 return;
             }
 
@@ -181,7 +181,7 @@ namespace Douyu.Client
             var movieCooldown = AppSettings.MovieCooldown;
             var lastPlayTime = MovieService.GetLastPlayTime(message.RoomId, movieName);
             if ((DateTime.Now - lastPlayTime).TotalMinutes < movieCooldown) {
-                Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 还有 {2} 分钟才能点播!",
+                Obs.MovieMessage.AddMessage("{0} : 点播【{1}】失败, 还有 {2} 分钟才能点播!",
                     message.UserName, movieName,
                     movieCooldown - (DateTime.Now - lastPlayTime).TotalMinutes);
                 return;
@@ -190,7 +190,7 @@ namespace Douyu.Client
             // 检查积分是否溢出
             var movieScore = 0;
             if (!int.TryParse(scoreInCommand, out movieScore)) {
-                Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分无效!", message.UserName, movieName);
+                Obs.MovieMessage.AddMessage("{0} : 点播【{1}】失败, 积分无效!", message.UserName, movieName);
                 return;
             }
             movieScore = Math.Abs(movieScore);
@@ -198,7 +198,7 @@ namespace Douyu.Client
             // 用户积分够吗?
             var userScore = UserService.GetScore(message.RoomId, message.UserId);
             if (userScore < movieScore) {
-                Obs.MovieMessage.ShowFail("[{0}]: 点播 {1} 失败, 积分不够, 当前积分 {2}",
+                Obs.MovieMessage.AddMessage("{0} : 点播【{1}】失败, 积分不够, 当前积分 {2}",
                     message.UserName, movieName, userScore);
                 return;
             }
@@ -208,8 +208,7 @@ namespace Douyu.Client
             UserService.AddScore(message.RoomId, message.UserId, message.UserName, movieScore * (-1));
 
             // 显示成功点播信息
-            var rank = MovieService.GetMovieRank(message.RoomId, movieName);
-            Obs.MovieMessage.PlayMovie(message.UserName, movieName, rank);
+            Obs.MovieMessage.AddMessage("{0} :【{1}】+ {2}", message.UserName, movieName, movieScore);
             return;
         }
 

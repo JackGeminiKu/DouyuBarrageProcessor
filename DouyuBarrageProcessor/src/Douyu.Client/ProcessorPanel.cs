@@ -34,7 +34,10 @@ namespace Douyu.Client
             try {
                 _tmrUpdateRank.Stop();
                 Obs.TopMovies.Update();
-                Obs.TopUsers.Update();
+                if (AppSettings.ShowTopUsers)
+                    Obs.TopUsers.Update();
+                else
+                    Obs.TopUsers.Clear();
             } catch (Exception ex) {
                 LogService.Error("更新排名出现异常!", ex);
             } finally {

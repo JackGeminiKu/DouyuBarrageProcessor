@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Data.SqlClient;
 using Dapper;
 using System.IO;
+using Douyu.Client;
 
 namespace DouyuBarrageProcessorTest
 {
@@ -146,6 +147,13 @@ namespace DouyuBarrageProcessorTest
             }
 
             return money / 10;
+        }
+
+        SelfDeletingFile _playMessage = new SelfDeletingFile(@"D:\PlayMessage.txt", 10, 10);
+
+        private void btnTestTimerFile_Click(object sender, EventArgs e)
+        {
+            _playMessage.WriteLine(DateTime.Now.ToLongTimeString());
         }
     }
 
