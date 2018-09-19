@@ -47,7 +47,7 @@ namespace Douyu.Client
                     // 获取消息
                     var messages = ChatMessage.GetMessages(RoomId);
                     if (messages.Length == 0) {
-                        MyApplication.Delay(100);
+                        MyApplication.Delay(1000);
                         continue;
                     }
 
