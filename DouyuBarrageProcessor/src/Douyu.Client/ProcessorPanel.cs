@@ -73,17 +73,17 @@ namespace Douyu.Client
 
         void barrageProcessor_ChatMessageProcessed(object sender, ProcessMessageEventArgs<ChatMessage> e)
         {
-            ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.Text);
+            ShowMessage("[{0:MM/dd HH:mm:ss}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.Text);
         }
 
         void barrageProcessor_GiftMessageProcessed(object sender, ProcessMessageEventArgs<GiftMessage> e)
         {
-            ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.GiftName);
+            ShowMessage("[{0:MM/dd HH:mm:ss}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.GiftName);
         }
 
         void barrageProcessor_ChouqinMessageProcessed(object sender, ProcessMessageEventArgs<ChouqinMessage> e)
         {
-            ShowMessage("[{0:HH:mm}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.ChouqinName);
+            ShowMessage("[{0:MM/dd HH:mm:ss}] [{1}]: {2}", e.Message.Time, e.Message.UserName, e.Message.ChouqinName);
         }
 
         void ShowMessage(string format, params object[] args)
